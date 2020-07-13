@@ -9,6 +9,10 @@ LIMIT = 500  # Количество интервалов для отображе
 n1 = 10
 n2 = 50
 nmax = max(n1, n2)
+n3 = 21
+n4 = 52
+nmax2 = max(n3, n4)
+INDICATOR = 'hhll' # Указываем какой индикатор показывать (ma - средние, hhll - минимумы)
 # Получаем данные с Alpaca о текущем состоянии
 
 minute_bars_url = config.BARS_URL + '/minute?symbols={}&limit={}'.format(TICKERS, LIMIT)
@@ -42,12 +46,15 @@ figure = go.Figure(data=[candlestick])
 figure.layout.xaxis.type = 'category'
 
 
-# Функция для создания индикаторов и их отображения
-def create_indicator(n, nmax, color):
+# Функция для создания индикаторов обычного среднего (по close) и их отображения
+def create_moving_average_indicator(n, nmax, color, type):
     x = []
     y = []
     for i in range(nmax, LIMIT + 1):
-        y.append(data.loc[i - n:i - 1]['c'].mean())
+        if type == 'c':
+            y.append(data.loc[i - n:i - 1][type].mean())
+        else:
+            y.append(data.loc[i - n:i - 1][type].min())
         x.append(data.iloc[i - 1]['t'])
     trace = {
         "x": x,
@@ -63,6 +70,12 @@ def create_indicator(n, nmax, color):
     return trace
 
 
-figure.add_trace(create_indicator(n1, nmax, '#3859ff'))
-figure.add_trace(create_indicator(n2, nmax, '#000000'))
+if INDICATOR == 'ma':
+    figure.add_trace(create_moving_average_indicator(n1, nmax, '#3859ff', 'c'))
+    figure.add_trace(create_moving_average_indicator(n2, nmax, '#000000', 'c'))
+elif INDICATOR == 'hhll':
+    figure.add_trace(create_moving_average_indicator(n3, nmax2, '#ff0000', 'l'))
+    figure.add_trace(create_moving_average_indicator(n4, nmax2, '#000000', 'l'))
+    figure.add_trace(create_moving_average_indicator(n3, nmax2, '#ff0000', 'h'))
+    figure.add_trace(create_moving_average_indicator(n4, nmax2, '#000000', 'h'))
 figure.show()
