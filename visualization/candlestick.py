@@ -53,8 +53,10 @@ def create_moving_average_indicator(n, nmax, color, type):
     for i in range(nmax, LIMIT + 1):
         if type == 'c':
             y.append(data.loc[i - n:i - 1][type].mean())
-        else:
+        elif type == 'l':
             y.append(data.loc[i - n:i - 1][type].min())
+        elif type == 'h':
+            y.append(data.loc[i - n:i - 1][type].max())
         x.append(data.iloc[i - 1]['t'])
     trace = {
         "x": x,
