@@ -2,7 +2,7 @@ import plotly.graph_objects as go
 import datetime
 import config, requests, json, pandas as pd
 
-TICKERS = 'DIS'  # Указать интересующие тикеры, если нужно несколько, то перечислить через запятую (Пока работает
+TICKERS = 'AAPL'  # Указать интересующие тикеры, если нужно несколько, то перечислить через запятую (Пока работает
 # только для 1)
 LIMIT = 500  # Количество интервалов для отображения
 # Настройка показателей индикаторов
@@ -12,7 +12,7 @@ nmax = max(n1, n2)
 n3 = 21
 n4 = 52
 nmax2 = max(n3, n4)
-INDICATOR = 'hhll' # Указываем какой индикатор показывать (ma - средние, hhll - минимумы)
+INDICATOR = 'ma'  # Указываем какой индикатор показывать (ma - средние, hhll - минимумы)
 # Получаем данные с Alpaca о текущем состоянии
 
 minute_bars_url = config.BARS_URL + '/minute?symbols={}&limit={}'.format(TICKERS, LIMIT)
@@ -46,19 +46,20 @@ figure = go.Figure(data=[candlestick])
 figure.layout.xaxis.type = 'category'
 
 
-# Функция для создания индикаторов обычного среднего (по close) и их отображения
-def create_moving_average_indicator(n, nmax, color, type):
-    x = []
-    y = []
-    for i in range(nmax, LIMIT + 1):
+# Функция для создания индикаторов всех типов, здесь обновляется data, добавляются столбцы с индикаторами
+def create_moving_average_indicator(n, maxn, color, type):
+    for i in range(maxn, LIMIT + 1):
         if type == 'c':
-            y.append(data.loc[i - n:i - 1][type].mean())
+            data['cmean' + str(n)] = data['c'].rolling(n).mean()
         elif type == 'l':
-            y.append(data.loc[i - n:i - 1][type].min())
+            data['llow' + str(n)] = data['l'].rolling(n).min()
         elif type == 'h':
-            y.append(data.loc[i - n:i - 1][type].max())
-        x.append(data.iloc[i - 1]['t'])
-    trace = {
+            data['hhigh' + str(n)] = data['h'].rolling(n).max()
+    return create_trace(data['t'][maxn-1:], data.iloc[:, -1][maxn-1:], color, n)
+
+# Функция для создание линии отображения индикаторов на графике
+def create_trace(x, y, color, n):
+    return {
         "x": x,
         "y": y,
         "line": {
@@ -69,7 +70,6 @@ def create_moving_average_indicator(n, nmax, color, type):
         "name": "MA" + str(n),
         "type": "scatter",
     }
-    return trace
 
 
 if INDICATOR == 'ma':
