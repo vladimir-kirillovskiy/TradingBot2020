@@ -20,6 +20,15 @@ def set_ATR(n):
     atr = wwma(tr, n)
     return atr
 
+# Функция записывает в data информацию обо всех индикаторах
+def set_indicators(n1, n2, n3, n4):
+    data['cmean' + str(n1)] = data['c'].rolling(n1).mean()
+    data['cmean' + str(n2)] = data['c'].rolling(n2).mean()
+    data['llow' + str(n3)] = data['l'].rolling(n3).min()
+    data['llow' + str(n4)] = data['l'].rolling(n4).min()
+    data['hhigh' + str(n3)] = data['h'].rolling(n3).max()
+    data['hhigh' + str(n4)] = data['h'].rolling(n4).max()
+
 
 TICKERS = 'AAPL'  # Указать интересующие тикеры, если нужно несколько, то перечислить через запятую (Пока работает
 # только для 1)
@@ -31,7 +40,7 @@ nmax = max(n1, n2)
 n3 = 21
 n4 = 52
 nmax2 = max(n3, n4)
-INDICATOR = 'ma'  # Указываем какой индикатор показывать (ma - средние, hhll - минимумы)
+INDICATOR = 'hhll'  # Указываем какой индикатор показывать (ma - средние, hhll - минимумы)
 # Получаем данные с Alpaca о текущем состоянии
 
 minute_bars_url = config.BARS_URL + '/minute?symbols={}&limit={}'.format(TICKERS, LIMIT)
@@ -55,6 +64,7 @@ for elem in data[TICKERS]:
     data_dict['l'].append(elem['l'])
     data_dict['c'].append(elem['c'])
 data = pd.DataFrame(data_dict)
+set_indicators(n1, n2, n3, n4)
 data['ATR'] = set_ATR(15)
 data_draw = data.tail(LIMIT - nmax + 1)
 
@@ -67,15 +77,8 @@ figure.layout.xaxis.type = 'category'
 
 
 # Функция для создания индикаторов всех типов, здесь обновляется data, добавляются столбцы с индикаторами
-def create_moving_average_indicator(n, maxn, color, type):
-    for i in range(maxn, LIMIT + 1):
-        if type == 'c':
-            data['cmean' + str(n)] = data['c'].rolling(n).mean()
-        elif type == 'l':
-            data['llow' + str(n)] = data['l'].rolling(n).min()
-        elif type == 'h':
-            data['hhigh' + str(n)] = data['h'].rolling(n).max()
-    return create_trace(data['t'][maxn - 1:], data.iloc[:, -1][maxn - 1:], color, n)
+def create_moving_average_indicator(n, maxn, color, column):
+    return create_trace(data['t'][maxn - 1:], data[column][maxn - 1:], color, n)
 
 
 # Функция для создание линии отображения индикаторов на графике
@@ -94,11 +97,11 @@ def create_trace(x, y, color, n):
 
 
 if INDICATOR == 'ma':
-    figure.add_trace(create_moving_average_indicator(n1, nmax, '#3859ff', 'c'))
-    figure.add_trace(create_moving_average_indicator(n2, nmax, '#000000', 'c'))
+    figure.add_trace(create_moving_average_indicator(n1, nmax, '#3859ff', 'cmean' + str(n1)))
+    figure.add_trace(create_moving_average_indicator(n2, nmax, '#000000', 'cmean' + str(n2)))
 elif INDICATOR == 'hhll':
-    figure.add_trace(create_moving_average_indicator(n3, nmax2, '#ff0000', 'l'))
-    figure.add_trace(create_moving_average_indicator(n4, nmax2, '#000000', 'l'))
-    figure.add_trace(create_moving_average_indicator(n3, nmax2, '#ff0000', 'h'))
-    figure.add_trace(create_moving_average_indicator(n4, nmax2, '#000000', 'h'))
+    figure.add_trace(create_moving_average_indicator(n3, nmax2, '#ff0000', 'llow' + str(n3)))
+    figure.add_trace(create_moving_average_indicator(n4, nmax2, '#000000', 'llow' + str(n4)))
+    figure.add_trace(create_moving_average_indicator(n3, nmax2, '#ff0000', 'hhigh' + str(n3)))
+    figure.add_trace(create_moving_average_indicator(n4, nmax2, '#000000', 'hhigh' + str(n4)))
 figure.show()
