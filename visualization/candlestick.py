@@ -2,6 +2,25 @@ import plotly.graph_objects as go
 import datetime
 import config, requests, json, pandas as pd
 
+
+# Функция возвращает значение ATR для данных из функции set_ATR
+def wwma(values, n):
+    return values.ewm(alpha=1 / n, adjust=False).mean()
+
+
+# Задает данные для функции wwma и возвращает столбец с данными ATR
+def set_ATR(n):
+    high = data['h']
+    low = data['l']
+    close = data['c']
+    data['tr0'] = abs(high - low)
+    data['tr1'] = abs(high - close.shift())
+    data['tr2'] = abs(low - close.shift())
+    tr = data[['tr0', 'tr1', 'tr2']].max(axis=1)
+    atr = wwma(tr, n)
+    return atr
+
+
 TICKERS = 'AAPL'  # Указать интересующие тикеры, если нужно несколько, то перечислить через запятую (Пока работает
 # только для 1)
 LIMIT = 500  # Количество интервалов для отображения
@@ -36,6 +55,7 @@ for elem in data[TICKERS]:
     data_dict['l'].append(elem['l'])
     data_dict['c'].append(elem['c'])
 data = pd.DataFrame(data_dict)
+data['ATR'] = set_ATR(15)
 data_draw = data.tail(LIMIT - nmax + 1)
 
 # Создание графика Candlestick по данным из DataFrame
@@ -55,7 +75,8 @@ def create_moving_average_indicator(n, maxn, color, type):
             data['llow' + str(n)] = data['l'].rolling(n).min()
         elif type == 'h':
             data['hhigh' + str(n)] = data['h'].rolling(n).max()
-    return create_trace(data['t'][maxn-1:], data.iloc[:, -1][maxn-1:], color, n)
+    return create_trace(data['t'][maxn - 1:], data.iloc[:, -1][maxn - 1:], color, n)
+
 
 # Функция для создание линии отображения индикаторов на графике
 def create_trace(x, y, color, n):
