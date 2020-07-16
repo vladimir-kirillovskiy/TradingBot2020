@@ -18,7 +18,9 @@ def set_ATR(n):
     data['tr2'] = abs(low - close.shift())
     tr = data[['tr0', 'tr1', 'tr2']].max(axis=1)
     atr = wwma(tr, n)
+    data.drop(['tr0', 'tr1', 'tr2'], axis='columns', inplace=True)
     return atr
+
 
 # Функция записывает в data информацию обо всех индикаторах
 def set_indicators(n1, n2, n3, n4):
@@ -28,6 +30,12 @@ def set_indicators(n1, n2, n3, n4):
     data['llow' + str(n4)] = data['l'].rolling(n4).min()
     data['hhigh' + str(n3)] = data['h'].rolling(n3).max()
     data['hhigh' + str(n4)] = data['h'].rolling(n4).max()
+
+
+# Функция записывает в data информацию об ATR bands
+def set_ATR_bands():
+    data['ATR_High'] = data[['h', 'ATR']].sum(axis=1)
+    data['ATR_Low'] = data['l'] - data['ATR']
 
 
 TICKERS = 'AAPL'  # Указать интересующие тикеры, если нужно несколько, то перечислить через запятую (Пока работает
@@ -66,6 +74,7 @@ for elem in data[TICKERS]:
 data = pd.DataFrame(data_dict)
 set_indicators(n1, n2, n3, n4)
 data['ATR'] = set_ATR(15)
+set_ATR_bands()
 data_draw = data.tail(LIMIT - nmax + 1)
 
 # Создание графика Candlestick по данным из DataFrame
@@ -104,4 +113,5 @@ elif INDICATOR == 'hhll':
     figure.add_trace(create_moving_average_indicator(n4, nmax2, '#000000', 'llow' + str(n4)))
     figure.add_trace(create_moving_average_indicator(n3, nmax2, '#ff0000', 'hhigh' + str(n3)))
     figure.add_trace(create_moving_average_indicator(n4, nmax2, '#000000', 'hhigh' + str(n4)))
-figure.show()
+# figure.show()
+print(data)
