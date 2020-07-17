@@ -9,7 +9,7 @@ def wwma(values, n):
 
 
 # Задает данные для функции wwma и возвращает столбец с данными ATR
-def set_ATR(n):
+def set_ATR(data, n):
     high = data['h']
     low = data['l']
     close = data['c']
@@ -23,7 +23,7 @@ def set_ATR(n):
 
 
 # Функция записывает в data информацию обо всех индикаторах
-def set_indicators(n1, n2, n3, n4):
+def set_indicators(data, n1, n2, n3, n4):
     data['cmean' + str(n1)] = data['c'].rolling(n1).mean()
     data['cmean' + str(n2)] = data['c'].rolling(n2).mean()
     data['llow' + str(n3)] = data['l'].rolling(n3).min()
@@ -33,9 +33,38 @@ def set_indicators(n1, n2, n3, n4):
 
 
 # Функция записывает в data информацию об ATR bands
-def set_ATR_bands():
+def set_ATR_bands(data):
     data['ATR_High'] = data[['h', 'ATR']].sum(axis=1)
     data['ATR_Low'] = data['l'] - data['ATR']
+
+
+def get_dataframe(TICKERS, LIMIT):
+    # Получаем данные с Alpaca о текущем состоянии
+
+    minute_bars_url = config.BARS_URL + '/minute?symbols={}&limit={}'.format(TICKERS, LIMIT)
+    r = requests.get(minute_bars_url, headers=config.HEADERS)
+    data = json.dumps(r.json(), indent=4)
+    # Записываем их в файл, затем считываем в формате json
+    with open('data.txt', 'w') as output:
+        output.write(data)
+    with open('data.txt') as input:
+        data = json.load(input)
+
+    data_dict = {'t': [], 'o': [], 'h': [], 'l': [], 'c': []}  # Словарь для создания DataFrame
+
+    # На основании информации заполняем data_dict, затем создаем DataFrame на его основе
+
+    for elem in data[TICKERS]:
+        data_dict['t'].append(datetime.datetime.fromtimestamp(elem['t']))
+        data_dict['o'].append(elem['o'])
+        data_dict['h'].append(elem['h'])
+        data_dict['l'].append(elem['l'])
+        data_dict['c'].append(elem['c'])
+    data = pd.DataFrame(data_dict)
+    set_indicators(data, n1, n2, n3, n4)
+    data['ATR'] = set_ATR(data, 15)
+    set_ATR_bands(data)
+    return data
 
 
 TICKERS = 'AAPL'  # Указать интересующие тикеры, если нужно несколько, то перечислить через запятую (Пока работает
@@ -49,40 +78,6 @@ n3 = 21
 n4 = 52
 nmax2 = max(n3, n4)
 INDICATOR = 'hhll'  # Указываем какой индикатор показывать (ma - средние, hhll - минимумы)
-# Получаем данные с Alpaca о текущем состоянии
-
-minute_bars_url = config.BARS_URL + '/minute?symbols={}&limit={}'.format(TICKERS, LIMIT)
-r = requests.get(minute_bars_url, headers=config.HEADERS)
-data = json.dumps(r.json(), indent=4)
-
-# Записываем их в файл, затем считываем в формате json
-with open('data.txt', 'w') as output:
-    output.write(data)
-with open('data.txt') as input:
-    data = json.load(input)
-
-data_dict = {'t': [], 'o': [], 'h': [], 'l': [], 'c': []}  # Словарь для создания DataFrame
-
-# На основании информации заполняем data_dict, затем создаем DataFrame на его основе
-
-for elem in data[TICKERS]:
-    data_dict['t'].append(datetime.datetime.fromtimestamp(elem['t']))
-    data_dict['o'].append(elem['o'])
-    data_dict['h'].append(elem['h'])
-    data_dict['l'].append(elem['l'])
-    data_dict['c'].append(elem['c'])
-data = pd.DataFrame(data_dict)
-set_indicators(n1, n2, n3, n4)
-data['ATR'] = set_ATR(15)
-set_ATR_bands()
-data_draw = data.tail(LIMIT - nmax + 1)
-
-# Создание графика Candlestick по данным из DataFrame
-
-candlestick = go.Candlestick(x=data_draw['t'], open=data_draw['o'], high=data_draw['h'], low=data_draw['l'],
-                             close=data_draw['c'])
-figure = go.Figure(data=[candlestick])
-figure.layout.xaxis.type = 'category'
 
 
 # Функция для создания индикаторов всех типов, здесь обновляется data, добавляются столбцы с индикаторами
@@ -105,13 +100,24 @@ def create_trace(x, y, color, n):
     }
 
 
-if INDICATOR == 'ma':
-    figure.add_trace(create_moving_average_indicator(n1, nmax, '#3859ff', 'cmean' + str(n1)))
-    figure.add_trace(create_moving_average_indicator(n2, nmax, '#000000', 'cmean' + str(n2)))
-elif INDICATOR == 'hhll':
-    figure.add_trace(create_moving_average_indicator(n3, nmax2, '#ff0000', 'llow' + str(n3)))
-    figure.add_trace(create_moving_average_indicator(n4, nmax2, '#000000', 'llow' + str(n4)))
-    figure.add_trace(create_moving_average_indicator(n3, nmax2, '#ff0000', 'hhigh' + str(n3)))
-    figure.add_trace(create_moving_average_indicator(n4, nmax2, '#000000', 'hhigh' + str(n4)))
-# figure.show()
-print(data)
+def get_last_ATR(df):
+    return df['ATR'].iloc[-1]
+
+
+if __name__ == "__main__":
+    # Создание графика Candlestick по данным из DataFrame
+    data = get_dataframe(TICKERS, LIMIT)
+    data_draw = data.tail(LIMIT - nmax + 1)
+    candlestick = go.Candlestick(x=data_draw['t'], open=data_draw['o'], high=data_draw['h'], low=data_draw['l'],
+                                 close=data_draw['c'])
+    figure = go.Figure(data=[candlestick])
+    figure.layout.xaxis.type = 'category'
+    if INDICATOR == 'ma':
+        figure.add_trace(create_moving_average_indicator(n1, nmax, '#3859ff', 'cmean' + str(n1)))
+        figure.add_trace(create_moving_average_indicator(n2, nmax, '#000000', 'cmean' + str(n2)))
+    elif INDICATOR == 'hhll':
+        figure.add_trace(create_moving_average_indicator(n3, nmax2, '#ff0000', 'llow' + str(n3)))
+        figure.add_trace(create_moving_average_indicator(n4, nmax2, '#000000', 'llow' + str(n4)))
+        figure.add_trace(create_moving_average_indicator(n3, nmax2, '#ff0000', 'hhigh' + str(n3)))
+        figure.add_trace(create_moving_average_indicator(n4, nmax2, '#000000', 'hhigh' + str(n4)))
+    figure.show()
