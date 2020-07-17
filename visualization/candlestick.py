@@ -104,9 +104,7 @@ def get_last_ATR(df):
     return df['ATR'].iloc[-1]
 
 
-if __name__ == "__main__":
-    # Создание графика Candlestick по данным из DataFrame
-    data = get_dataframe(TICKERS, LIMIT)
+def visualize(data):
     data_draw = data.tail(LIMIT - nmax + 1)
     candlestick = go.Candlestick(x=data_draw['t'], open=data_draw['o'], high=data_draw['h'], low=data_draw['l'],
                                  close=data_draw['c'])
@@ -121,3 +119,5 @@ if __name__ == "__main__":
         figure.add_trace(create_moving_average_indicator(n3, nmax2, '#ff0000', 'hhigh' + str(n3)))
         figure.add_trace(create_moving_average_indicator(n4, nmax2, '#000000', 'hhigh' + str(n4)))
     figure.show()
+# data = get_dataframe(TICKERS, LIMIT)
+# visualize(data)

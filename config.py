@@ -1,8 +1,8 @@
 BASE_URL = 'https://paper-api.alpaca.markets'
-KEY_ID = 'PKN9785PTQ3ZW50B3A5M'
-SECRET_Key = 'NXTlKVQ4vkLZV/xywQ81SscgC2Pr34kVlEqQZAkX'
+KEY_ID = 'PKT7MKZM3HA5JWW7WD23'
+SECRET_Key = 'RrBW7WZeudITauCcyJknNmcMqv1irySQnQBf2R1p'
 HEADERS = {
-    'APCA-API-KEY-ID' : KEY_ID,
-    'APCA-API-SECRET-KEY' : SECRET_Key
+    'APCA-API-KEY-ID': KEY_ID,
+    'APCA-API-SECRET-KEY': SECRET_Key
 }
 BARS_URL = 'https://data.alpaca.markets/v1/bars'
