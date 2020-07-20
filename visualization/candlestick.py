@@ -84,7 +84,7 @@ INDICATOR = 'hhll'  # Указываем какой индикатор пока�
 
 
 # Функция для создания индикаторов всех типов, здесь обновляется data, добавляются столбцы с индикаторами
-def create_moving_average_indicator(n, maxn, color, column):
+def create_moving_average_indicator(data, n, maxn, color, column):
     return create_trace(data['t'][maxn - 1:], data[column][maxn - 1:], color, n)
 
 
@@ -121,13 +121,13 @@ def visualize(data):
     figure = go.Figure(data=[candlestick])
     figure.layout.xaxis.type = 'category'
     if INDICATOR == 'ma':
-        figure.add_trace(create_moving_average_indicator(n1, nmax, '#3859ff', 'cmean' + str(n1)))
-        figure.add_trace(create_moving_average_indicator(n2, nmax, '#000000', 'cmean' + str(n2)))
+        figure.add_trace(create_moving_average_indicator(data, n1, nmax, '#3859ff', 'cmean' + str(n1)))
+        figure.add_trace(create_moving_average_indicator(data, n2, nmax, '#000000', 'cmean' + str(n2)))
     elif INDICATOR == 'hhll':
-        figure.add_trace(create_moving_average_indicator(n3, nmax2, '#ff0000', 'llow' + str(n3)))
-        figure.add_trace(create_moving_average_indicator(n4, nmax2, '#000000', 'llow' + str(n4)))
-        figure.add_trace(create_moving_average_indicator(n3, nmax2, '#ff0000', 'hhigh' + str(n3)))
-        figure.add_trace(create_moving_average_indicator(n4, nmax2, '#000000', 'hhigh' + str(n4)))
+        figure.add_trace(create_moving_average_indicator(data, n3, nmax2, '#ff0000', 'llow' + str(n3)))
+        figure.add_trace(create_moving_average_indicator(data, n4, nmax2, '#000000', 'llow' + str(n4)))
+        figure.add_trace(create_moving_average_indicator(data, n3, nmax2, '#ff0000', 'hhigh' + str(n3)))
+        figure.add_trace(create_moving_average_indicator(data, n4, nmax2, '#000000', 'hhigh' + str(n4)))
     figure.show()
 # data = get_dataframe(TICKERS, LIMIT)
 # visualize(data)
