@@ -38,6 +38,7 @@ def set_ATR_bands(data):
     data['ATR_Low'] = data['l'] - data['ATR']
 
 
+# Функция возвращает data со всеми данными по акциям
 def get_dataframe(TICKERS, LIMIT):
     # Получаем данные с Alpaca о текущем состоянии
 
@@ -100,10 +101,17 @@ def create_trace(x, y, color, n):
     }
 
 
+# Функция возвращает последнее значение ATR
 def get_last_ATR(df):
     return df['ATR'].iloc[-1]
 
 
+# Функция возвращает последнюю цену (o - открытия, c - закрытия, h - наибольшую, l - наименьшую) Пример в test.py
+def get_last_price(df, type):
+    return df[type].iloc[-1]
+
+
+# Функция отображает candlestick график и индикаторы
 def visualize(data):
     data_draw = data.tail(LIMIT - nmax + 1)
     candlestick = go.Candlestick(x=data_draw['t'], open=data_draw['o'], high=data_draw['h'], low=data_draw['l'],
