@@ -1,7 +1,7 @@
 import plotly.graph_objects as go
 import datetime
 import config, requests, json, pandas as pd
-
+import time
 
 # Функция возвращает значение ATR для данных из функции set_ATR
 def wwma(values, n):
@@ -42,6 +42,7 @@ def set_ATR_bands(data):
 def get_dataframe(TICKERS, LIMIT):
     # Получаем данные с Alpaca о текущем состоянии
 
+    start_time = time.time()
     minute_bars_url = config.BARS_URL + '/minute?symbols={}&limit={}'.format(TICKERS, LIMIT)
     r = requests.get(minute_bars_url, headers=config.HEADERS)
     data = json.dumps(r.json(), indent=4)
@@ -65,7 +66,8 @@ def get_dataframe(TICKERS, LIMIT):
     set_indicators(data, n1, n2, n3, n4)
     data['ATR'] = set_ATR(data, 15)
     set_ATR_bands(data)
-    return data
+
+    return data, time.time()-start_time
 
 
 TICKERS = 'AAPL'  # Указать интересующие тикеры, если нужно несколько, то перечислить через запятую (Пока работает
