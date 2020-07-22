@@ -1,7 +1,13 @@
-import plotly.graph_objects as go
 import datetime
-import config, requests, json, pandas as pd
 import time
+
+import plotly.graph_objects as go
+
+import config
+import json
+import pandas as pd
+import requests
+
 
 # Функция возвращает значение ATR для данных из функции set_ATR
 def wwma(values, n):
@@ -39,11 +45,14 @@ def set_ATR_bands(data):
 
 
 # Функция возвращает data со всеми данными по акциям
-def get_dataframe(TICKERS, LIMIT):
+def get_dataframe(TICKERS, LIMIT, START = None, END = None):
     # Получаем данные с Alpaca о текущем состоянии
 
     start_time = time.time()
-    minute_bars_url = config.BARS_URL + '/minute?symbols={}&limit={}'.format(TICKERS, LIMIT)
+    if START is None and END is None:
+        minute_bars_url = config.BARS_URL + '/minute?symbols={}&limit={}'.format(TICKERS, LIMIT)
+    else:
+        minute_bars_url = config.BARS_URL + '/minute?symbols={}&limit={}&start={}&end={}'.format(TICKERS, LIMIT, START, END)
     r = requests.get(minute_bars_url, headers=config.HEADERS)
     data = json.dumps(r.json(), indent=4)
     # Записываем их в файл, затем считываем в формате json
