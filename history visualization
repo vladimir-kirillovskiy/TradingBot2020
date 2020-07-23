@@ -1,0 +1,31 @@
+# Строим график изменения прибыли за указанное время
+def visual_history(api, period=None, time_frame='1H', date_start=None, date_end=None):
+
+    # Time_frame может принимать значения '1Min', '5Min', '15Min', '1H', or '1D'
+    # Period: The duration of the data in <number> + <unit>, such as 1D, where <unit> can be D for day,
+    # W for week, M for month and A for year.
+    # The date in “YYYY-MM-DD” format 
+    history = api.get_portfolio_history(period=period, timeframe=time_frame, date_start=date_start, date_end=date_end) # Получаем всю историю аккаунта за указанное время
+    x = []
+    for each in history.timestamp:
+        # Переводим время в формат "YYYY-MM-DDTHH:MM:SS.mmmmmm" или, если microsecond == 0, "YYYY-MM-DDTHH:MM:SS"
+        x.append(datetime.datetime.isoformat(datetime.datetime.fromtimestamp(each))) 
+    y = history.equity
+
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(x=x, y=y))
+    fig.layout.xaxis.type = 'category'
+    fig.show()
+    
+
+# Получаем два словаря вида {datetime:symbol}, соответсвующие выполненным ордерам на покупку и продажу
+def get_dots(api, date_start=None, date_end=None):
+    orders = api.list_orders(status='closed', after=date_start, until=date_end, limit=500, direction='asc') # Получаем до 500 закрытых ордеров, по умолчанию последних
+    sells = {}
+    buys = {}
+    for order in orders:
+        if order.side == 'sell':
+            sells[datetime.datetime.isoformat(order.filled_at)] = order.symbol
+        else:
+            buys[datetime.datetime.isoformat(order.filled_at)] = order.symbol
+    return sells, buys
