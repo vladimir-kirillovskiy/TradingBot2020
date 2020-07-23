@@ -20,7 +20,7 @@ def on_open(ws):
 def on_message(ws, message):
     print("received a message")
     #print(message)
-    minute_bars_url = config.BARS_URL + '/1Min?symbols=AAPL&limit=1'
+    minute_bars_url = config.BARS_URL + '/1Min?symbols=AAPL&limit=2'
     r = requests.get(minute_bars_url, headers=config.HEADERS)
     print(json.dumps(r.json(),indent=4))
     
