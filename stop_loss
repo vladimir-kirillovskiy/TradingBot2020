@@ -1,11 +1,21 @@
 from visualization.candlestick import get_last_ATR, get_dataframe, get_last_price
-
+import alpaca_trade_api as tradeapi
 
 # аргументом функции является название акции
 
 def stop_loss(stock):
+    api = tradeapi.REST(
+        'PKATONHW8O227OL86EIT', # сюда вставляем  свой key
+        'SSt0X7PItaNTMKKW13ObZ3y9NwCsLPsnNkGxH91X', #cюда вставляем свой secret key
+        'https://paper-api.alpaca.markets'
+    )
+    account = api.get_account()
     df, time = get_dataframe(stock, 500)
     atr = get_last_ATR(df)
     price = get_last_price(df, 'c')
-    stop = price - 2 * atr
-    return stop
+    money_on_account = account.last_equity
+    if price < float(money_on_account)*0.1:
+        stop = price - 2 * atr
+        return stop
+    else :
+        return "Мы не можем позволить себе эту акцию"
