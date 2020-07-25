@@ -31,7 +31,7 @@ def risk_sell(stock):
     atr = get_last_ATR(df)
     price = get_last_price(df, 'c')
    if price > 10000:
-        stop = price - 2 * atr
+        stop = price + 2 * atr
         return stop, (stop / price) * 100   #сколько акций мы можем себе позволить, учитывая стоп лосс
     else:
         return "Пока нет смысла продавать эту акцию"
