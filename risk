@@ -3,6 +3,17 @@ from visualization.candlestick import get_last_ATR, get_dataframe, get_last_pric
 
 # аргументом функции является название акции
 
+
+def risk(action, stock):
+    if action == 'buy':
+        return risk_buy(stock)
+    elif action == 'sell' :
+        risk_sell(stock)
+    else :
+        return 'error, action must be buy or sell'
+        
+        
+        
 def risk_buy(stock):
     df, time = get_dataframe(stock, 500)
     atr = get_last_ATR(df)
