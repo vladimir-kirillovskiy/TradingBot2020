@@ -20,10 +20,11 @@ def visual_history(api, period=None, time_frame='1H', date_start=None, date_end=
 
 # Получаем два словаря вида {datetime:symbol}, соответсвующие выполненным ордерам на покупку и продажу
 def get_dots(api, date_start=None, date_end=None):
-    orders = api.list_orders(status='closed', after=date_start, until=date_end, limit=500, direction='asc') # Получаем до 500 закрытых ордеров, по умолчанию последних
+    orders = api.list_orders(status='closed', after=date_start, until=date_end, limit=500) # Получаем до 500 закрытых ордеров, по умолчанию последних
+    correct_orders = [each for each in orders if each.status == 'filled']
     sells = {}
     buys = {}
-    for order in orders:
+    for order in correct.orders:
         if order.side == 'sell':
             sells[datetime.datetime.isoformat(order.filled_at)] = order.symbol
         else:
