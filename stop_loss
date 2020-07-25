@@ -3,6 +3,16 @@ import alpaca_trade_api as tradeapi
 
 # аргументом функции является название акции
 
+def stop_loss(action, stock):
+    if action == 'buy':
+        return stop_loss_buy(stock)
+    elif action == 'sell' :
+        stop_loss_sell(stock)
+    else :
+        return 'error, action must be buy or sell'
+        
+        
+        
 def stop_loss_buy(stock):
     api = tradeapi.REST(
         'PKATONHW8O227OL86EIT', # сюда вставляем  свой key
@@ -28,3 +38,4 @@ def stop_loss_sell(stock):
     price = get_last_price(df, 'c')
     stop = price + 2 * atr
     return stop       
+
