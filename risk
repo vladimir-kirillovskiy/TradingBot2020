@@ -3,7 +3,7 @@ from visualization.candlestick import get_last_ATR, get_dataframe, get_last_pric
 
 # аргументом функции является название акции
 
-def risk(stock):
+def risk_buy(stock):
     df, time = get_dataframe(stock, 500)
     atr = get_last_ATR(df)
     price = get_last_price(df, 'c')
@@ -12,3 +12,15 @@ def risk(stock):
         return stop, (stop / price) * 100   #сколько акций мы можем себе позволить, учитывая стоп лосс
     else:
         return "Мы не можем позволить себе эту акцию"
+      
+from visualization.candlestick import get_last_ATR, get_dataframe, get_last_price
+
+
+
+
+def risk_sell(stock):
+    df, time = get_dataframe(stock, 500)
+    atr = get_last_ATR(df)
+    price = get_last_price(df, 'c')
+    stop = price + 2 * atr
+    return stop, (stop / price) * 100   #сколько акций мы можем себе позволить, учитывая стоп лосс 
