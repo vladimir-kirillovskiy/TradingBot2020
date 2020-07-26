@@ -36,6 +36,9 @@ def set_indicators(data, n1, n2, n3, n4):
     data['llow' + str(n4)] = data['l'].rolling(n4).min()
     data['hhigh' + str(n3)] = data['h'].rolling(n3).max()
     data['hhigh' + str(n4)] = data['h'].rolling(n4).max()
+    for i in range(1, LIMIT):
+        if (data.loc[i, 'cmean' + str(n1)] - data.loc[i, 'cmean' + str(n2)]) * (data.loc[i-1, 'cmean' + str(n1)] - data.loc[i-1, 'cmean' + str(n2)]) < 0:
+            data.loc[i, 'ma'] = True
 
 
 # Функция записывает в data информацию об ATR bands
@@ -45,14 +48,15 @@ def set_ATR_bands(data):
 
 
 # Функция возвращает data со всеми данными по акциям
-def get_dataframe(TICKERS, LIMIT, START = None, END = None):
+def get_dataframe(TICKERS, LIMIT, START=None, END=None):
     # Получаем данные с Alpaca о текущем состоянии
 
     start_time = time.time()
     if START is None and END is None:
         minute_bars_url = config.BARS_URL + '/minute?symbols={}&limit={}'.format(TICKERS, LIMIT)
     else:
-        minute_bars_url = config.BARS_URL + '/minute?symbols={}&limit={}&start={}&end={}'.format(TICKERS, LIMIT, START, END)
+        minute_bars_url = config.BARS_URL + '/minute?symbols={}&limit={}&start={}&end={}'.format(TICKERS, LIMIT, START,
+                                                                                                 END)
     r = requests.get(minute_bars_url, headers=config.HEADERS)
     data = json.dumps(r.json(), indent=4)
     # Записываем их в файл, затем считываем в формате json
@@ -76,12 +80,12 @@ def get_dataframe(TICKERS, LIMIT, START = None, END = None):
     data['ATR'] = set_ATR(data, 15)
     set_ATR_bands(data)
 
-    return data, time.time()-start_time
+    return data, time.time() - start_time
 
 
 TICKERS = 'AAPL'  # Указать интересующие тикеры, если нужно несколько, то перечислить через запятую (Пока работает
 # только для 1)
-LIMIT = 500  # Количество интервалов для отображения
+LIMIT = 500 # Количество интервалов для отображения
 # Настройка показателей индикаторов
 n1 = 10
 n2 = 50
@@ -89,7 +93,7 @@ nmax = max(n1, n2)
 n3 = 21
 n4 = 52
 nmax2 = max(n3, n4)
-INDICATOR = 'hhll'  # Указываем какой индикатор показывать (ma - средние, hhll - минимумы)
+INDICATOR = 'ma'  # Указываем какой индикатор показывать (ma - средние, hhll - минимумы)
 
 
 # Функция для создания индикаторов всех типов, здесь обновляется data, добавляются столбцы с индикаторами
@@ -138,5 +142,10 @@ def visualize(data):
         figure.add_trace(create_moving_average_indicator(data, n3, nmax2, '#ff0000', 'hhigh' + str(n3)))
         figure.add_trace(create_moving_average_indicator(data, n4, nmax2, '#000000', 'hhigh' + str(n4)))
     figure.show()
-# data = get_dataframe(TICKERS, LIMIT)
-# visualize(data)
+
+def check_indicator(df, type):
+    pass
+
+data, time = get_dataframe(TICKERS, LIMIT)
+print(data['ma'].dropna())
+visualize(data)
