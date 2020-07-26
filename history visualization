@@ -24,7 +24,7 @@ def get_dots(api, date_start=None, date_end=None):
     correct_orders = [each for each in orders if each.status == 'filled']
     sells = {}
     buys = {}
-    for order in correct.orders:
+    for order in correct_orders:
         if order.side == 'sell':
             sells[datetime.datetime.isoformat(order.filled_at)] = order.symbol
         else:
