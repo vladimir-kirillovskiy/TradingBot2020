@@ -1,0 +1,73 @@
+# Строим график изменения прибыли за указанное время
+def visual_history(api, period=None, time_frame='1H', date_start=None, date_end=None):
+
+    # Time_frame может принимать значения '1Min', '5Min', '15Min', '1H', or '1D'
+    # Period: The duration of the data in <number> + <unit>, such as 1D, where <unit> can be D for day,
+    # W for week, M for month and A for year.
+    # The date in “YYYY-MM-DD” format 
+    history = api.get_portfolio_history(period=period, timeframe=time_frame, date_start=date_start, date_end=date_end) # Получаем всю историю аккаунта за указанное время
+    x = []
+    for each in history.timestamp:
+        # Переводим время в формат "YYYY-MM-DDTHH:MM:SS.mmmmmm" или, если microsecond == 0, "YYYY-MM-DDTHH:MM:SS"
+        x.append(datetime.datetime.isoformat(datetime.datetime.fromtimestamp(each))) 
+    y = history.equity
+    
+   return x, y
+   
+   
+   # Получаем два словаря вида {datetime:symbol}, соответсвующие выполненным ордерам на покупку и продажу
+   def get_dots(api, date_start=None, date_end=None, time_frame='1H', time_example='2020-07-16T16:30:00'):
+    orders = api.list_orders(status='closed', after=date_start, until=date_end, limit=500,)
+    correct_orders = [each for each in orders if each.status == 'filled']
+    sells = {}
+    buys = {}
+    for order in correct_orders:
+        isoform = datetime.datetime.isoformat(order.filled_at)
+
+        if time_frame == '1Min':
+            isoform = isoform[:-16]
+            ost = time_example[-3:]
+            isoform += ost
+        elif time_frame == '5Min':
+            isoform_ost = isoform[-17]
+            ost = time_example[-4:]
+            isoform = isoform[:-17]
+            isoform_ost = (int(ost[0]) + ((abs(int(isoform_ost) - int(ost[0])))//5)*5) % 10
+            isoform += str(isoform_ost) + ost[-3:]
+        elif time_frame == '15Min':
+            isoform_ost = isoform[-18:-16]
+            ost = time_example[-5:]
+            isoform_ost = (int(ost[:2]) + ((abs(int(isoform_ost) - int(ost[:2])))//15)*15) % 60
+            if isoform_ost < 10:
+                isoform_ost = '0' + str(isoform_ost)
+            else:
+                isoform_ost = str(isoform_ost)
+            isoform = isoform[:-18]
+            isoform += isoform_ost + ost[2:]
+        elif time_frame == '1H':
+            ost = time_example[-6:]
+            isoform = isoform[:-19]
+            isoform += ost
+        else:
+            ost = time_example[-9:]
+            isoform = isoform[:-22]
+            isoform += ost
+
+        if order.side == 'sell':
+            sells[isoform] = order.symbol
+        else:
+            buys[isoform] = order.symbol
+
+    return sells, buys
+    
+    
+    
+t_frame = '5Min'
+x, y = visual_history(my_api, period='15D', time_frame=t_frame)
+sell_dots, buy_dots = get_dots(my_api, time_frame=t_frame, time_example=x[0])
+
+fig = go.Figure()
+fig.add_trace(go.Scatter(x=x, y=y, name='$', mode='lines+markers', marker=dict(size=3)))
+fig.layout.xaxis.type = 'category'
+
+fig.show()
