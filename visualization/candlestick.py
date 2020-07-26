@@ -6,6 +6,7 @@ import plotly.graph_objects as go
 import config
 import json
 import pandas as pd
+import numpy as np
 import requests
 
 
@@ -37,8 +38,11 @@ def set_indicators(data, n1, n2, n3, n4):
     data['hhigh' + str(n3)] = data['h'].rolling(n3).max()
     data['hhigh' + str(n4)] = data['h'].rolling(n4).max()
     for i in range(1, LIMIT):
-        if (data.loc[i, 'cmean' + str(n1)] - data.loc[i, 'cmean' + str(n2)]) * (data.loc[i-1, 'cmean' + str(n1)] - data.loc[i-1, 'cmean' + str(n2)]) < 0:
+        if (data.loc[i, 'cmean' + str(n1)] - data.loc[i, 'cmean' + str(n2)]) * (
+                data.loc[i - 1, 'cmean' + str(n1)] - data.loc[i - 1, 'cmean' + str(n2)]) < 0:
             data.loc[i, 'ma'] = True
+        else:
+            data.loc[i, 'ma'] = False
 
 
 # Функция записывает в data информацию об ATR bands
@@ -85,7 +89,7 @@ def get_dataframe(TICKERS, LIMIT, START=None, END=None):
 
 TICKERS = 'AAPL'  # Указать интересующие тикеры, если нужно несколько, то перечислить через запятую (Пока работает
 # только для 1)
-LIMIT = 500 # Количество интервалов для отображения
+LIMIT = 500  # Количество интервалов для отображения
 # Настройка показателей индикаторов
 n1 = 10
 n2 = 50
@@ -143,9 +147,15 @@ def visualize(data):
         figure.add_trace(create_moving_average_indicator(data, n4, nmax2, '#000000', 'hhigh' + str(n4)))
     figure.show()
 
+
+# Функция проверяет является ли последняя цена сигналом на покупку / продажу
 def check_indicator(df, type):
-    pass
+    if type == 'ma':
+        if df.loc[LIMIT-1, 'ma']:
+            return True
+        return False
+
 
 data, time = get_dataframe(TICKERS, LIMIT)
-print(data['ma'].dropna())
-visualize(data)
+#visualize(data)
+print(check_indicator(data, 'ma'))
