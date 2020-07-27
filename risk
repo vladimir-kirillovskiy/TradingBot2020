@@ -9,7 +9,9 @@ def risk(action, stock):
         return risk_buy(stock)
     elif action == 'sell' :
         risk_sell(stock)
-    else :
+    elif action == 'non' :
+        pass
+     else :
         return 'error, action must be buy or sell'
         
         
