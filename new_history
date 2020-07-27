@@ -1,10 +1,11 @@
-# Строим график изменения прибыли за указанное время
-def visual_history(api, period=None, time_frame='1H', date_start=None, date_end=None):
+# В portfolio history время хранится в формате timestamp, а в списке ордеров в iso с часовым поясом
+# Чтобы привести их к одному виду, проводим с ними различные манипуляции, которые наверняка можно упростить
+# Valid timeframe for days > 7 are [5Min 15Min 1H 1D]
+# Valid timeframe for days > 30 is 1D
 
-    # Time_frame может принимать значения '1Min', '5Min', '15Min', '1H', or '1D'
-    # Period: The duration of the data in <number> + <unit>, such as 1D, where <unit> can be D for day,
-    # W for week, M for month and A for year.
-    # The date in “YYYY-MM-DD” format 
+
+# Строим график изменения прибыли за указанное время
+def visual_history(api, period, time_frame, date_start, date_end):
     history = api.get_portfolio_history(period=period, timeframe=time_frame, date_start=date_start, date_end=date_end) # Получаем всю историю аккаунта за указанное время
     x = []
     for each in history.timestamp:
@@ -15,44 +16,48 @@ def visual_history(api, period=None, time_frame='1H', date_start=None, date_end=
    return x, y
    
    
-   # Получаем два словаря вида {datetime:symbol}, соответсвующие выполненным ордерам на покупку и продажу
-   def get_dots(api, date_start=None, date_end=None, time_frame='1H', time_example='2020-07-16T16:30:00'):
+# Получаем два словаря вида {datetime:symbol}, соответсвующие выполненным ордерам на покупку и продажу
+def get_dots(api, date_start, date_end, time_frame, time_example='2020-07-16T16:30:00'):
     orders = api.list_orders(status='closed', after=date_start, until=date_end, limit=500,)
     correct_orders = [each for each in orders if each.status == 'filled']
     sells = {}
     buys = {}
     for order in correct_orders:
-        isoform = datetime.datetime.isoformat(order.filled_at)
-
+        isoform = datetime.datetime.fromtimestamp(datetime.datetime.timestamp(order.filled_at))
+        isoform = str(isoform)
+        isoform = isoform[:10]+'T'+isoform[11:]  # Приводим время к формату isoform
+        
+        # Округляем время, чтобы его точность совпадала с точностью времени на графике
         if time_frame == '1Min':
-            isoform = isoform[:-16]
+            isoform = isoform[:-10]
             ost = time_example[-3:]
             isoform += ost
         elif time_frame == '5Min':
-            isoform_ost = isoform[-17]
+            isoform_ost = isoform[-11]
             ost = time_example[-4:]
-            isoform = isoform[:-17]
-            isoform_ost = (int(ost[0]) + ((abs(int(isoform_ost) - int(ost[0])))//5)*5) % 10
+            isoform = isoform[:-11]
+            isoform_ost = (int(ost[0]) + ((int(isoform_ost) - int(ost[0])) // 5) * 5) % 10
             isoform += str(isoform_ost) + ost[-3:]
         elif time_frame == '15Min':
-            isoform_ost = isoform[-18:-16]
+            isoform_ost = isoform[-12:-10]
             ost = time_example[-5:]
-            isoform_ost = (int(ost[:2]) + ((abs(int(isoform_ost) - int(ost[:2])))//15)*15) % 60
+            isoform_ost = (int(ost[:2]) + ((int(isoform_ost) - int(ost[:2])) // 15) * 15) % 60
             if isoform_ost < 10:
                 isoform_ost = '0' + str(isoform_ost)
             else:
                 isoform_ost = str(isoform_ost)
-            isoform = isoform[:-18]
+            isoform = isoform[:-12]
             isoform += isoform_ost + ost[2:]
         elif time_frame == '1H':
             ost = time_example[-6:]
-            isoform = isoform[:-19]
+            isoform = isoform[:-13]
             isoform += ost
         else:
             ost = time_example[-9:]
-            isoform = isoform[:-22]
+            isoform = isoform[:-16]
             isoform += ost
 
+        # Храним всё в словаре, чтобы в будущем была возможность показывать на графике еще и какие именно акции были куплены/проданы
         if order.side == 'sell':
             sells[isoform] = order.symbol
         else:
@@ -60,14 +65,43 @@ def visual_history(api, period=None, time_frame='1H', date_start=None, date_end=
 
     return sells, buys
     
-    
-    
-t_frame = '5Min'
-x, y = visual_history(my_api, period='15D', time_frame=t_frame)
-sell_dots, buy_dots = get_dots(my_api, time_frame=t_frame, time_example=x[0])
 
-fig = go.Figure()
-fig.add_trace(go.Scatter(x=x, y=y, name='$', mode='lines+markers', marker=dict(size=3)))
-fig.layout.xaxis.type = 'category'
+# Основная функция для отрисовки графика с маркерами и кривой
+def visualization(api, period=None, time_frame='1D', date_start=None, date_end=None):
+    # Time_frame может принимать значения '1Min', '5Min', '15Min', '1H', or '1D'
+    # Period: The duration of the data in <number> + <unit>, such as 1D, where <unit> can be D for day,
+    # W for week, M for month and A for year.
+    # The date in “YYYY-MM-DD” format 
+    
+    x, y = visual_history(api, period, time_frame, date_start, date_end)
 
-fig.show()
+    sell_dots, buy_dots = get_dots(api, date_start, date_end, time_frame, time_example=x[0])
+
+    sell_x = []  # Время, в которое были выполнены ордеры на покупку
+    sell_y = []  # Прибыль в это время
+
+    buy_x = []  # Время, в которое были выполнены ордеры на продажу
+    buy_y = []  # Прибыль в это время
+
+    sell_buy_x = []  # Время, в которое были выполнены ордеры и на покупку, и на продажу
+    sell_buy_y = []  # Прибыль в это временя
+
+    for i in range(len(x)):  # Заполняем списки
+        if x[i] in sell_dots.keys() and x[i] in buy_dots.keys():
+            sell_buy_x.append(x[i])
+            sell_buy_y.append(y[i])
+        elif x[i] in sell_dots.keys():
+            sell_x.append(x[i])
+            sell_y.append(y[i])
+        elif x[i] in buy_dots.keys():
+            buy_x.append(x[i])
+            buy_y.append(y[i])
+
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(x=x, y=y, name='$', mode='lines'))
+    fig.add_trace(go.Scatter(x=sell_buy_x, y=sell_buy_y, name='sell+buy', mode='markers', marker=dict(size=8, color='#000000')))
+    fig.add_trace(go.Scatter(x=sell_x, y=sell_y, name='sell', mode='markers', marker=dict(size=8, color='#ff0000')))
+    fig.add_trace(go.Scatter(x=buy_x, y=buy_y, name='buy', mode='markers', marker=dict(size=8, color='#00ff00')))
+    fig.layout.xaxis.type = 'category'
+
+    fig.show()
