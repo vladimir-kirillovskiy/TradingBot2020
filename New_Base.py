@@ -46,7 +46,10 @@ def on_message(ws, message):
     print(price)
     risks = risk(unit)
     print(risks[1])
-    api.submit_order(symbol=unit,qty=risks[1],side='buy',type='limit',time_in_force='gtc',limit_price=risks[0])
+    if (price<10000):
+        api.submit_order(symbol=unit,qty=risks[1],side='buy',type='limit',time_in_force='gtc',limit_price=risks[0])
+    else:
+        print(risks)
 
     
 
@@ -57,6 +60,7 @@ socket = "wss://data.alpaca.markets/stream"
 
 ws = websocket.WebSocketApp(socket, on_open=on_open, on_message=on_message, on_close=on_close)
 ws.run_forever()
+
 
 
 
