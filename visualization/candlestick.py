@@ -42,6 +42,10 @@ def set_indicators(data, n1, n2, n3, n4):
             data.loc[i, 'ma'] = "Sell"
         elif (data.loc[i, 'cmean' + str(n1)] - data.loc[i, 'cmean' + str(n2)]) > 0 > (data.loc[i - 1, 'cmean' + str(n1)] - data.loc[i - 1, 'cmean' + str(n2)]):
             data.loc[i, 'ma'] = "Buy"
+        if data.loc[i, 'llow' + str(n3)] == data.loc[i, 'llow' + str(n4)] and data.loc[i, 'hhigh' + str(n3)] != data.loc[i, 'hhigh' + str(n4)]:
+            data.loc[i, 'hhll'] = "Sell"
+        elif data.loc[i, 'hhigh' + str(n3)] == data.loc[i, 'hhigh' + str(n4)] and data.loc[i, 'llow' + str(n3)] != data.loc[i, 'llow' + str(n4)]:
+            data.loc[i, 'hhll'] = "Buy"
 
 
 # Функция записывает в data информацию об ATR bands
@@ -86,7 +90,7 @@ def get_dataframe(TICKERS, LIMIT, START=None, END=None):
     return data, time.time() - start_time
 
 
-TICKERS = 'AAPL'  # Указать интересующие тикеры, если нужно несколько, то перечислить через запятую (Пока работает
+TICKERS = 'DIS'  # Указать интересующие тикеры, если нужно несколько, то перечислить через запятую (Пока работает
 # только для 1)
 LIMIT = 500  # Количество интервалов для отображения
 # Настройка показателей индикаторов
@@ -151,8 +155,9 @@ def visualize(data):
 def check_indicator(df, type):
     if type == 'ma':
         return df.tail(1)['ma']
+    elif type == 'hhll':
+        return df.tail(1)['hhll']
 
 
-# data, time = get_dataframe(TICKERS, LIMIT)
-#print(data.query('ma == "Sell"'))
-# print(check_indicator(data, 'ma'))
+#data, time = get_dataframe(TICKERS, LIMIT)
+#print(data.query('hhll == "Buy"'))
