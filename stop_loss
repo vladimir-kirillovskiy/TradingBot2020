@@ -8,6 +8,8 @@ def stop_loss(action, stock):
         return stop_loss_buy(stock)
     elif action == 'sell' :
         stop_loss_sell(stock)
+     elif action == 'non' :
+        pass
     else :
         return 'error, action must be buy or sell'
         
