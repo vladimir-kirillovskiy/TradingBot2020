@@ -38,11 +38,10 @@ def set_indicators(data, n1, n2, n3, n4):
     data['hhigh' + str(n3)] = data['h'].rolling(n3).max()
     data['hhigh' + str(n4)] = data['h'].rolling(n4).max()
     for i in range(1, LIMIT):
-        if (data.loc[i, 'cmean' + str(n1)] - data.loc[i, 'cmean' + str(n2)]) * (
-                data.loc[i - 1, 'cmean' + str(n1)] - data.loc[i - 1, 'cmean' + str(n2)]) < 0:
-            data.loc[i, 'ma'] = True
-        else:
-            data.loc[i, 'ma'] = False
+        if (data.loc[i, 'cmean' + str(n1)] - data.loc[i, 'cmean' + str(n2)]) < 0 < (data.loc[i - 1, 'cmean' + str(n1)] - data.loc[i - 1, 'cmean' + str(n2)]):
+            data.loc[i, 'ma'] = "Sell"
+        elif (data.loc[i, 'cmean' + str(n1)] - data.loc[i, 'cmean' + str(n2)]) > 0 > (data.loc[i - 1, 'cmean' + str(n1)] - data.loc[i - 1, 'cmean' + str(n2)]):
+            data.loc[i, 'ma'] = "Buy"
 
 
 # Функция записывает в data информацию об ATR bands
@@ -97,7 +96,7 @@ nmax = max(n1, n2)
 n3 = 21
 n4 = 52
 nmax2 = max(n3, n4)
-INDICATOR = 'ma'  # Указываем какой индикатор показывать (ma - средние, hhll - минимумы)
+INDICATOR = 'hhll'  # Указываем какой индикатор показывать (ma - средние, hhll - минимумы)
 
 
 # Функция для создания индикаторов всех типов, здесь обновляется data, добавляются столбцы с индикаторами
@@ -151,11 +150,9 @@ def visualize(data):
 # Функция проверяет является ли последняя цена сигналом на покупку / продажу
 def check_indicator(df, type):
     if type == 'ma':
-        if df.loc[LIMIT-1, 'ma']:
-            return True
-        return False
+        return df.tail(1)['ma']
 
 
-data, time = get_dataframe(TICKERS, LIMIT)
-#visualize(data)
-print(check_indicator(data, 'ma'))
+# data, time = get_dataframe(TICKERS, LIMIT)
+#print(data.query('ma == "Sell"'))
+# print(check_indicator(data, 'ma'))
