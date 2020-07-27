@@ -42,10 +42,14 @@ def set_indicators(data, n1, n2, n3, n4):
             data.loc[i, 'ma'] = "Sell"
         elif (data.loc[i, 'cmean' + str(n1)] - data.loc[i, 'cmean' + str(n2)]) > 0 > (data.loc[i - 1, 'cmean' + str(n1)] - data.loc[i - 1, 'cmean' + str(n2)]):
             data.loc[i, 'ma'] = "Buy"
+        else:
+            data.loc[i, 'ma'] = "Skip"
         if data.loc[i, 'llow' + str(n3)] == data.loc[i, 'llow' + str(n4)] and data.loc[i, 'hhigh' + str(n3)] != data.loc[i, 'hhigh' + str(n4)]:
             data.loc[i, 'hhll'] = "Sell"
         elif data.loc[i, 'hhigh' + str(n3)] == data.loc[i, 'hhigh' + str(n4)] and data.loc[i, 'llow' + str(n3)] != data.loc[i, 'llow' + str(n4)]:
             data.loc[i, 'hhll'] = "Buy"
+        else:
+            data.loc[i, 'hhll'] = "Skip"
 
 
 # Функция записывает в data информацию об ATR bands
@@ -154,10 +158,10 @@ def visualize(data):
 # Функция проверяет является ли последняя цена сигналом на покупку / продажу
 def check_indicator(df, type):
     if type == 'ma':
-        return df.tail(1)['ma']
+        return df.tail(1)['ma'].iloc[0]
     elif type == 'hhll':
-        return df.tail(1)['hhll']
+        return df.tail(1)['hhll'].iloc[0]
 
 
-#data, time = get_dataframe(TICKERS, LIMIT)
-#print(data.query('hhll == "Buy"'))
+data, time = get_dataframe(TICKERS, LIMIT)
+print(check_indicator(data, 'hhll'))
