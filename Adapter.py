@@ -11,4 +11,4 @@ api.replace_order()  # Обновление стоп лосса
 
 api.submit_order()
 
-websocket.WebSocketApp()
+
