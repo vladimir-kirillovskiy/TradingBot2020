@@ -151,7 +151,7 @@ def add_anotations(fig, df, type):
     for i in range(len(list(df.t))):
         fig.add_annotation(
             x=list(df.t)[i],
-            y=list(df['cmean10'])[i],
+            y=list(df['c'])[i],
             text=type,
             showarrow=True,
             font=dict(
@@ -187,8 +187,8 @@ def visualize(data):
         figure.add_trace(create_moving_average_indicator(data, n2, nmax, '#000000', 'cmean' + str(n2)))
         df_buy = data.query('ma == "Buy"')
         df_sell = data.query('ma == "Sell"')
-        figure = add_anotations(figure, df_buy, "Buy")
-        figure = add_anotations(figure, df_sell, "Sell")
+        figure = add_anotations(figure, df_buy, "Buy", 'cmean' + str(n1))
+        figure = add_anotations(figure, df_sell, "Sell", 'cmean' + str(n1))
         figure.update_annotations(dict(
             xref="x",
             yref="y",
@@ -203,6 +203,17 @@ def visualize(data):
         figure.add_trace(create_moving_average_indicator(data, n4, nmax2, '#000000', 'llow' + str(n4)))
         figure.add_trace(create_moving_average_indicator(data, n3, nmax2, '#ff0000', 'hhigh' + str(n3)))
         figure.add_trace(create_moving_average_indicator(data, n4, nmax2, '#000000', 'hhigh' + str(n4)))
+        df_buy = data.query('hhll == "Buy"')
+        df_sell = data.query('hhll == "Sell"')
+        figure = add_anotations(figure, df_buy, "Buy", 'hhigh' + str(n3))
+        figure = add_anotations(figure, df_sell, "Sell", 'hhigh' + str(n3))
+        figure.update_annotations(dict(
+            xref="x",
+            yref="y",
+            showarrow=True,
+            arrowhead=7,
+        ))
+        figure.update_layout(showlegend=False)
     figure.show()
 
 
