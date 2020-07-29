@@ -104,7 +104,7 @@ nmax = max(n1, n2)
 n3 = 21
 n4 = 52
 nmax2 = max(n3, n4)
-INDICATOR = 'hhll'  # Указываем какой индикатор показывать (ma - средние, hhll - минимумы)
+INDICATOR = 'ma'  # Указываем какой индикатор показывать (ma - средние, hhll - минимумы)
 
 
 # Функция для создания индикаторов всех типов, здесь обновляется data, добавляются столбцы с индикаторами
@@ -147,6 +147,30 @@ def visualize(data):
     if INDICATOR == 'ma':
         figure.add_trace(create_moving_average_indicator(data, n1, nmax, '#3859ff', 'cmean' + str(n1)))
         figure.add_trace(create_moving_average_indicator(data, n2, nmax, '#000000', 'cmean' + str(n2)))
+        df_buy = data.query('ma == "Buy"')
+        df_sell = data.query('ma == "Sell"')
+        for i in range(len(list(df_buy.t))):
+            figure.add_annotation(
+                x=list(df_buy.t)[i],
+                y=list(df_buy['cmean10'])[i],
+                text="Buy")
+        for i in range(len(list(df_sell.t))):
+            figure.add_annotation(
+                x=list(df_sell.t)[i],
+                y=list(df_sell['cmean10'])[i],
+                text="Sell")
+        figure.update_annotations(dict(
+            xref="x",
+            yref="y",
+            showarrow=True,
+            arrowhead=7,
+            ax=0,
+            ay=-40
+        ))
+
+        figure.update_layout(showlegend=False)
+
+
     elif INDICATOR == 'hhll':
         figure.add_trace(create_moving_average_indicator(data, n3, nmax2, '#ff0000', 'llow' + str(n3)))
         figure.add_trace(create_moving_average_indicator(data, n4, nmax2, '#000000', 'llow' + str(n4)))
@@ -164,4 +188,4 @@ def check_indicator(df, type):
 
 
 data, time = get_dataframe(TICKERS, LIMIT)
-print(check_indicator(data, 'hhll'))
+visualize(data)
