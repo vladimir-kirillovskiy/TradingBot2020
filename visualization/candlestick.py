@@ -38,15 +38,19 @@ def set_indicators(data, n1, n2, n3, n4):
     data['hhigh' + str(n3)] = data['h'].rolling(n3).max()
     data['hhigh' + str(n4)] = data['h'].rolling(n4).max()
     for i in range(1, LIMIT):
-        if (data.loc[i, 'cmean' + str(n1)] - data.loc[i, 'cmean' + str(n2)]) < 0 < (data.loc[i - 1, 'cmean' + str(n1)] - data.loc[i - 1, 'cmean' + str(n2)]):
+        if (data.loc[i, 'cmean' + str(n1)] - data.loc[i, 'cmean' + str(n2)]) < 0 < (
+                data.loc[i - 1, 'cmean' + str(n1)] - data.loc[i - 1, 'cmean' + str(n2)]):
             data.loc[i, 'ma'] = "Sell"
-        elif (data.loc[i, 'cmean' + str(n1)] - data.loc[i, 'cmean' + str(n2)]) > 0 > (data.loc[i - 1, 'cmean' + str(n1)] - data.loc[i - 1, 'cmean' + str(n2)]):
+        elif (data.loc[i, 'cmean' + str(n1)] - data.loc[i, 'cmean' + str(n2)]) > 0 > (
+                data.loc[i - 1, 'cmean' + str(n1)] - data.loc[i - 1, 'cmean' + str(n2)]):
             data.loc[i, 'ma'] = "Buy"
         else:
             data.loc[i, 'ma'] = "Skip"
-        if data.loc[i, 'llow' + str(n3)] == data.loc[i, 'llow' + str(n4)] and data.loc[i, 'hhigh' + str(n3)] != data.loc[i, 'hhigh' + str(n4)]:
+        if data.loc[i, 'llow' + str(n3)] == data.loc[i, 'llow' + str(n4)] and data.loc[i, 'hhigh' + str(n3)] != \
+                data.loc[i, 'hhigh' + str(n4)]:
             data.loc[i, 'hhll'] = "Sell"
-        elif data.loc[i, 'hhigh' + str(n3)] == data.loc[i, 'hhigh' + str(n4)] and data.loc[i, 'llow' + str(n3)] != data.loc[i, 'llow' + str(n4)]:
+        elif data.loc[i, 'hhigh' + str(n3)] == data.loc[i, 'hhigh' + str(n4)] and data.loc[i, 'llow' + str(n3)] != \
+                data.loc[i, 'llow' + str(n4)]:
             data.loc[i, 'hhll'] = "Buy"
         else:
             data.loc[i, 'hhll'] = "Skip"
@@ -137,6 +141,40 @@ def get_last_price(df, type):
     return df[type].iloc[-1]
 
 
+def add_anotations(fig, df, type):
+    if type == "Buy":
+        ay = -30
+        color = "#00ff00"
+    elif type == "Sell":
+        ay = 30
+        color = "#ff0000"
+    for i in range(len(list(df.t))):
+        fig.add_annotation(
+            x=list(df.t)[i],
+            y=list(df['cmean10'])[i],
+            text=type,
+            showarrow=True,
+            font=dict(
+                family="Courier New, monospace",
+                size=16,
+                color="#ffffff"
+            ),
+            align="center",
+            arrowhead=2,
+            arrowsize=1,
+            arrowwidth=2,
+            arrowcolor="#636363",
+            ax=0,
+            ay=ay,
+            bordercolor="#c7c7c7",
+            borderwidth=2,
+            borderpad=4,
+            bgcolor=color,
+            opacity=0.8
+        )
+    return fig
+
+
 # Функция отображает candlestick график и индикаторы
 def visualize(data):
     data_draw = data.tail(LIMIT - nmax + 1)
@@ -149,25 +187,14 @@ def visualize(data):
         figure.add_trace(create_moving_average_indicator(data, n2, nmax, '#000000', 'cmean' + str(n2)))
         df_buy = data.query('ma == "Buy"')
         df_sell = data.query('ma == "Sell"')
-        for i in range(len(list(df_buy.t))):
-            figure.add_annotation(
-                x=list(df_buy.t)[i],
-                y=list(df_buy['cmean10'])[i],
-                text="Buy")
-        for i in range(len(list(df_sell.t))):
-            figure.add_annotation(
-                x=list(df_sell.t)[i],
-                y=list(df_sell['cmean10'])[i],
-                text="Sell")
+        figure = add_anotations(figure, df_buy, "Buy")
+        figure = add_anotations(figure, df_sell, "Sell")
         figure.update_annotations(dict(
             xref="x",
             yref="y",
             showarrow=True,
             arrowhead=7,
-            ax=0,
-            ay=-40
         ))
-
         figure.update_layout(showlegend=False)
 
 
