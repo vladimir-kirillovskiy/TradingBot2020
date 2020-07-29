@@ -98,7 +98,7 @@ def get_dataframe(TICKERS, LIMIT, START=None, END=None):
     return data, time.time() - start_time
 
 
-TICKERS = 'DIS'  # Указать интересующие тикеры, если нужно несколько, то перечислить через запятую (Пока работает
+TICKERS = 'AAPL'  # Указать интересующие тикеры, если нужно несколько, то перечислить через запятую (Пока работает
 # только для 1)
 LIMIT = 500  # Количество интервалов для отображения
 # Настройка показателей индикаторов
@@ -187,8 +187,8 @@ def visualize(data):
         figure.add_trace(create_moving_average_indicator(data, n2, nmax, '#000000', 'cmean' + str(n2)))
         df_buy = data.query('ma == "Buy"')
         df_sell = data.query('ma == "Sell"')
-        figure = add_anotations(figure, df_buy, "Buy", 'cmean' + str(n1))
-        figure = add_anotations(figure, df_sell, "Sell", 'cmean' + str(n1))
+        figure = add_anotations(figure, df_buy, "Buy")
+        figure = add_anotations(figure, df_sell, "Sell")
         figure.update_annotations(dict(
             xref="x",
             yref="y",
