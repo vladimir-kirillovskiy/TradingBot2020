@@ -2,11 +2,10 @@ import alpaca_trade_api as tradeapi
 from alpaca_trade_api import StreamConn
 import time, websocket, json 
 import config
-from candlestick import get_dataframe, get_last_price, check_indicator
 from Risk import risk, risk_buy, risk_sell
-wait = 60
+from candlestick import get_dataframe, get_last_price, check_indicator
 api = tradeapi.REST('PKI5VSIHBY5QD660GUDG', '2BSNsP8amM0q7eFk0dq/xV4IOHhcYKQpcaWndd4u', 'https://paper-api.alpaca.markets',api_version='v2')
-
+price = 'no'
 
 print("Введите акцию для отслеживания: ")
 unit = input().upper()
@@ -28,18 +27,17 @@ def on_open(ws):
 
 def on_message(ws, message):
     print("received a message")
-    #print(message)
+    print(message)
     df = get_dataframe(unit,100)
-    price = get_last_price(df,'c')
+    price = get_last_price(df,'o')
     todo = check_indicator(df,'ma')
     
     print(price)
     risks = risk(todo, unit)
     print(risks[1])
-    #if (price<10000):
-        #api.submit_order(symbol=unit,qty=risks[1],side='buy',type='limit',time_in_force='gtc',limit_price=risks[0])
-    #else:
-        #print(risks)
+    if (price<10000 and price<risks[0]):
+        api.submit_order(symbol=unit,qty=risks[1],side='buy',type='limit',time_in_force='gtc',limit_price=risks[0])
+    
 
 
 
@@ -51,9 +49,6 @@ socket = "wss://data.alpaca.markets/stream"
 
 ws = websocket.WebSocketApp(socket, on_open=on_open, on_message=on_message, on_close=on_close)
 ws.run_forever()
-
-
-
 
 
 
