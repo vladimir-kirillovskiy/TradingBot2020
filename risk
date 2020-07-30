@@ -24,7 +24,7 @@ def risk_buy(stock):
         stop = price - 2 * atr
         return stop, (stop / price) * 100   #сколько акций мы можем себе позволить, учитывая стоп лосс
     else:
-        return "Мы не можем позволить себе эту акцию"
+        return 0, 0
       
 
 
@@ -36,4 +36,4 @@ def risk_sell(stock):
         stop = price + 2 * atr
         return stop, (stop / price) * 100   #сколько акций мы можем себе позволить, учитывая стоп лосс
     else:
-        return "Пока нет смысла продавать эту акцию"
+        return 0, 0
