@@ -11,4 +11,9 @@ api.replace_order()  # Обновление стоп лосса
 
 api.submit_order()
 
+api.get_asset()
+
+api.get_barset()
+
+api.get_portfolio_history()
 
