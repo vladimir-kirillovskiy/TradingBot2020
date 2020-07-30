@@ -5,11 +5,11 @@ from visualization.candlestick import get_last_ATR, get_dataframe, get_last_pric
 
 
 def risk(action, stock):
-    if action == 'buy':
+    if action == 'Buy':
         return risk_buy(stock)
-    elif action == 'sell' :
+    elif action == 'Sell' :
         risk_sell(stock)
-    elif action == 'non' :
+    elif action == 'Skip' :
         pass
      else :
         return 'error, action must be buy or sell'
