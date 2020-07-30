@@ -4,11 +4,11 @@ import alpaca_trade_api as tradeapi
 # аргументом функции является название акции
 
 def stop_loss(action, stock):
-    if action == 'buy':
+    if action == 'Buy':
         return stop_loss_buy(stock)
-    elif action == 'sell' :
+    elif action == 'Sell' :
         stop_loss_sell(stock)
-     elif action == 'non' :
+     elif action == 'Skip' :
         pass
     else :
         return 'error, action must be buy or sell'
