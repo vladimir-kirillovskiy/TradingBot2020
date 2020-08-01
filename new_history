@@ -83,6 +83,8 @@ def check_input(period, time_frame, date_start, date_end):
             unit = period[-1]
             if unit not in ['H', 'D']:
                 return 0  # 0 - wrong time_frame
+            else:
+                return 100  # Correct
 
     if period and date_start and date_end:
         return 1  # 1 - Задан и период, и время начала, и время конца
@@ -92,10 +94,12 @@ def check_input(period, time_frame, date_start, date_end):
         return 3  # Valid time_frame for days > 30 is 1D
 
     # Приводим даты к одному виду
-    start = date_start.split('-')
-    end = date_end.split('-')
-    start = datetime.date(int(start[0]), int(start[1]), int(start[2]))
-    end = datetime.date(int(end[0]), int(end[1]), int(end[2]))
+    if date_start:
+        start = date_start.split('-')
+        start = datetime.date(int(start[0]), int(start[1]), int(start[2]))
+    if date_end:
+        end = date_end.split('-')
+        end = datetime.date(int(end[0]), int(end[1]), int(end[2]))
     today = datetime.date.today()
 
     if (date_end and abs(int(str(end - start).split()[0])) > 7) and time_frame == '1Min':
@@ -106,7 +110,7 @@ def check_input(period, time_frame, date_start, date_end):
         return 3  # Valid time_frame for days > 30 is 1D
     elif (date_start and not date_end and abs(int(str(today - start).split()[0])) > 30) and time_frame != '1D':
         return 3  # Valid time_frame for days > 30 is 1D
-    return 100  # Корректный ввод
+    return 100  # Correct
     
     
 # Основная функция для отрисовки графика с маркерами и кривой
