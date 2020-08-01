@@ -26,7 +26,7 @@ def stop_loss_buy(stock):
     atr = get_last_ATR(df)
     price = get_last_price(df, 'c')
     money_on_account = account.last_equity
-    if price < float(money_on_account)*0.1:
+    if price < float(money_on_account)*0.05:
         stop = price - 2 * atr
         return stop
     else :
@@ -45,7 +45,7 @@ def stop_loss_sell(stock):
     atr = get_last_ATR(df)
     price = get_last_price(df, 'c')
     money_on_account = account.last_equity
-    if price > float(money_on_account)*0.1:
+    if price > float(money_on_account)*0.05:
         stop = price + 2 * atr
         return stop
     else :
