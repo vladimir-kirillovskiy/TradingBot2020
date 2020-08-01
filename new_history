@@ -66,6 +66,49 @@ def get_dots(api, date_start, date_end, time_frame, time_example='2020-07-16T16:
     return sells, buys
     
 
+# Проверка корректности введеных данных
+def check_input(period, time_frame, date_start, date_end):
+    num = 0
+    unit = ''
+    if period:
+        if period[-1] == 'n' and len(period) > 3:
+            num = int(period[:-3])
+            unit = period[-3:]
+            if unit != 'Min':
+                return 0  # 0 - wrong time_frame
+        elif period[-1] == 'n' and len(period) <= 3:
+            return 0  # 0 - wrong time_frame
+        else:
+            num = int(period[:-1])
+            unit = period[-1]
+            if unit not in ['H', 'D']:
+                return 0  # 0 - wrong time_frame
+
+    if period and date_start and date_end:
+        return 1  # 1 - Задан и период, и время начала, и время конца
+    elif num > 7 and unit == 'D' and time_frame == '1Min':
+        return 2  # 2 - Valid time_frame for days > 7 are [5Min 15Min 1H 1D]
+    elif num > 30 and unit == 'D' and time_frame != '1D':
+        return 3  # Valid time_frame for days > 30 is 1D
+
+    # Приводим даты к одному виду
+    start = date_start.split('-')
+    end = date_end.split('-')
+    start = datetime.date(int(start[0]), int(start[1]), int(start[2]))
+    end = datetime.date(int(end[0]), int(end[1]), int(end[2]))
+    today = datetime.date.today()
+
+    if (date_end and abs(int(str(end - start).split()[0])) > 7) and time_frame == '1Min':
+        return 2  # 2 - Valid time_frame for days > 7 are [5Min 15Min 1H 1D]
+    elif (date_start and not date_end and abs(int(str(today - start).split()[0])) > 7) and time_frame == '1Min':
+        return 2  # 2 - Valid time_frame for days > 7 are [5Min 15Min 1H 1D]
+    elif (date_end and abs(int(str(end - start).split()[0])) > 30) and time_frame != '1D':
+        return 3  # Valid time_frame for days > 30 is 1D
+    elif (date_start and not date_end and abs(int(str(today - start).split()[0])) > 30) and time_frame != '1D':
+        return 3  # Valid time_frame for days > 30 is 1D
+    return 100  # Корректный ввод
+    
+    
 # Основная функция для отрисовки графика с маркерами и кривой
 def visualization(api, period=None, time_frame='1D', date_start=None, date_end=None):
     # Time_frame может принимать значения '1Min', '5Min', '15Min', '1H', or '1D'
@@ -73,35 +116,47 @@ def visualization(api, period=None, time_frame='1D', date_start=None, date_end=N
     # W for week, M for month and A for year.
     # The date in “YYYY-MM-DD” format 
     
-    x, y = visual_history(api, period, time_frame, date_start, date_end)
+   check = check_input(period, time_frame, date_start, date_end)
+    if check == 0:
+        return 'Неверный time_frame'
+    elif check == 1:
+        return 'Слишком много данных'
+    elif check == 2:
+        return 'Valid time_frame for days > 7 are [5Min 15Min 1H 1D]'
+    elif check == 3:
+        return 'Valid time_frame for days > 30 is 1D'
+    else:
+        x, y = visual_history(api, period, time_frame, date_start, date_end)
 
-    sell_dots, buy_dots = get_dots(api, date_start, date_end, time_frame, time_example=x[0])
+        sell_dots, buy_dots = get_dots(api, date_start, date_end, time_frame, time_example=x[0])
 
-    sell_x = []  # Время, в которое были выполнены ордеры на покупку
-    sell_y = []  # Прибыль в это время
+        sell_x = []  # Время, в которое были выполнены ордеры на покупку
+        sell_y = []  # Прибыль в это время
 
-    buy_x = []  # Время, в которое были выполнены ордеры на продажу
-    buy_y = []  # Прибыль в это время
+        buy_x = []  # Время, в которое были выполнены ордеры на продажу
+        buy_y = []  # Прибыль в это время
 
-    sell_buy_x = []  # Время, в которое были выполнены ордеры и на покупку, и на продажу
-    sell_buy_y = []  # Прибыль в это временя
+        sell_buy_x = []  # Время, в которое были выполнены ордеры и на покупку, и на продажу
+        sell_buy_y = []  # Прибыль в это временя
 
-    for i in range(len(x)):  # Заполняем списки
-        if x[i] in sell_dots.keys() and x[i] in buy_dots.keys():
-            sell_buy_x.append(x[i])
-            sell_buy_y.append(y[i])
-        elif x[i] in sell_dots.keys():
-            sell_x.append(x[i])
-            sell_y.append(y[i])
-        elif x[i] in buy_dots.keys():
-            buy_x.append(x[i])
-            buy_y.append(y[i])
+        for i in range(len(x)):  # Заполняем списки
+            if x[i] in sell_dots.keys() and x[i] in buy_dots.keys():
+                sell_buy_x.append(x[i])
+                sell_buy_y.append(y[i])
+            elif x[i] in sell_dots.keys():
+                sell_x.append(x[i])
+                sell_y.append(y[i])
+            elif x[i] in buy_dots.keys():
+                buy_x.append(x[i])
+                buy_y.append(y[i])
 
-    fig = go.Figure()
-    fig.add_trace(go.Scatter(x=x, y=y, name='$', mode='lines'))
-    fig.add_trace(go.Scatter(x=sell_buy_x, y=sell_buy_y, name='sell+buy', mode='markers', marker=dict(size=8, color='#000000')))
-    fig.add_trace(go.Scatter(x=sell_x, y=sell_y, name='sell', mode='markers', marker=dict(size=8, color='#ff0000')))
-    fig.add_trace(go.Scatter(x=buy_x, y=buy_y, name='buy', mode='markers', marker=dict(size=8, color='#00ff00')))
-    fig.layout.xaxis.type = 'category'
+        fig = go.Figure()
+        fig.add_trace(go.Scatter(x=x, y=y, name='$', mode='lines'))
+        fig.add_trace(
+            go.Scatter(x=sell_buy_x, y=sell_buy_y, name='sell+buy', mode='markers', marker=dict(size=8, color='#000000')))
+        fig.add_trace(go.Scatter(x=sell_x, y=sell_y, name='sell', mode='markers', marker=dict(size=8, color='#ff0000')))
+        fig.add_trace(go.Scatter(x=buy_x, y=buy_y, name='buy', mode='markers', marker=dict(size=8, color='#00ff00')))
+        fig.layout.xaxis.type = 'category'
 
-    fig.show()
+        fig.show()
+        return 'Done'
