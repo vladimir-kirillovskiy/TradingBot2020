@@ -185,35 +185,22 @@ def visualize(data):
     if INDICATOR == 'ma':
         figure.add_trace(create_moving_average_indicator(data, n1, nmax, '#3859ff', 'cmean' + str(n1)))
         figure.add_trace(create_moving_average_indicator(data, n2, nmax, '#000000', 'cmean' + str(n2)))
-        df_buy = data.query('ma == "Buy"')
-        df_sell = data.query('ma == "Sell"')
-        figure = add_anotations(figure, df_buy, "Buy")
-        figure = add_anotations(figure, df_sell, "Sell")
-        figure.update_annotations(dict(
-            xref="x",
-            yref="y",
-            showarrow=True,
-            arrowhead=7,
-        ))
-        figure.update_layout(showlegend=False)
-
-
     elif INDICATOR == 'hhll':
         figure.add_trace(create_moving_average_indicator(data, n3, nmax2, '#ff0000', 'llow' + str(n3)))
         figure.add_trace(create_moving_average_indicator(data, n4, nmax2, '#000000', 'llow' + str(n4)))
         figure.add_trace(create_moving_average_indicator(data, n3, nmax2, '#ff0000', 'hhigh' + str(n3)))
         figure.add_trace(create_moving_average_indicator(data, n4, nmax2, '#000000', 'hhigh' + str(n4)))
-        df_buy = data.query('hhll == "Buy"')
-        df_sell = data.query('hhll == "Sell"')
-        figure = add_anotations(figure, df_buy, "Buy", 'hhigh' + str(n3))
-        figure = add_anotations(figure, df_sell, "Sell", 'hhigh' + str(n3))
-        figure.update_annotations(dict(
-            xref="x",
-            yref="y",
-            showarrow=True,
-            arrowhead=7,
-        ))
-        figure.update_layout(showlegend=False)
+    df_buy = data.query('{} == "Buy"'.format(INDICATOR))
+    df_sell = data.query('{} == "Sell"'.format(INDICATOR))
+    figure = add_anotations(figure, df_buy, "Buy")
+    figure = add_anotations(figure, df_sell, "Sell")
+    figure.update_annotations(dict(
+        xref="x",
+        yref="y",
+        showarrow=True,
+        arrowhead=7,
+    ))
+    figure.update_layout(showlegend=False)
     figure.show()
 
 
@@ -225,5 +212,5 @@ def check_indicator(df, type):
         return df.tail(1)['hhll'].iloc[0]
 
 
-data, time = get_dataframe(TICKERS, LIMIT)
-visualize(data)
+#data, time = get_dataframe(TICKERS, LIMIT)
+#visualize(data)
