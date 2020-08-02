@@ -40,15 +40,7 @@ def on_open(ws):
 def on_message(ws, message):
     print("received a message")
     print(message)
-    df = get_dataframe(unit,100)
-    price = get_last_price(df,'o')
-    todo = check_indicator(df,'ma')
-    
-    print(price)
-    risks = risk(todo, unit)
-    print(risks[1])
-    if (price<10000 and price<risks[0]):
-        api.submit_order(symbol=unit,qty=risks[1],side='buy',type='limit',time_in_force='gtc',limit_price=risks[0])
+    asyncio.run(workplace(unit))
     
 
 
