@@ -30,7 +30,7 @@ def set_ATR(data, n):
 
 
 # Функция записывает в data информацию обо всех индикаторах
-def set_indicators(data, n1, n2, n3, n4):
+def set_indicators(data, n1, n2, n3, n4, LIMIT):
     data['cmean' + str(n1)] = data['c'].rolling(n1).mean()
     data['cmean' + str(n2)] = data['c'].rolling(n2).mean()
     data['llow' + str(n3)] = data['l'].rolling(n3).min()
@@ -91,7 +91,7 @@ def get_dataframe(TICKERS, LIMIT, START=None, END=None):
         data_dict['l'].append(elem['l'])
         data_dict['c'].append(elem['c'])
     data = pd.DataFrame(data_dict)
-    set_indicators(data, n1, n2, n3, n4)
+    set_indicators(data, n1, n2, n3, n4, LIMIT)
     data['ATR'] = set_ATR(data, 15)
     set_ATR_bands(data)
 
@@ -100,7 +100,7 @@ def get_dataframe(TICKERS, LIMIT, START=None, END=None):
 
 TICKERS = 'AAPL'  # Указать интересующие тикеры, если нужно несколько, то перечислить через запятую (Пока работает
 # только для 1)
-LIMIT = 500  # Количество интервалов для отображения
+LIMIT = 100  # Количество интервалов для отображения
 # Настройка показателей индикаторов
 n1 = 10
 n2 = 50
@@ -212,5 +212,5 @@ def check_indicator(df, type):
         return df.tail(1)['hhll'].iloc[0]
 
 
-#data, time = get_dataframe(TICKERS, LIMIT)
-#visualize(data)
+#data, time = get_dataframe(TICKERS, 100)
+#print(time)
