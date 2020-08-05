@@ -7,7 +7,7 @@ import asyncio
 from Risk import risk, risk_buy, risk_sell
 from candlestick import get_dataframe, get_last_price, check_indicator
 api = tradeapi.REST('PKI5VSIHBY5QD660GUDG', '2BSNsP8amM0q7eFk0dq/xV4IOHhcYKQpcaWndd4u', 'https://paper-api.alpaca.markets',api_version='v2')
-price = 'no'
+
 
 # Ввод нужной акции для работы
 print("Введите акцию для отслеживания: ")
