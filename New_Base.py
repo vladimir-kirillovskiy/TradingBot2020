@@ -48,7 +48,7 @@ def workplace():
     df = get_dataframe('AAPL',100)
     price = get_last_price(df[0],'c')
     print('price ', price)
-    todo = check_indicator(df,'ma')
+    todo = check_indicator(df[0],'ma')
     print('todo: ', todo)
     risks = risk(todo, 'AAPL')
     print(risks[1])
@@ -59,4 +59,5 @@ socket = "wss://data.alpaca.markets/stream"
 
 ws = websocket.WebSocketApp(socket, on_open=on_open, on_message=on_message, on_close=on_close)
 ws.run_forever()
+
 
