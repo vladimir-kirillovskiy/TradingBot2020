@@ -15,7 +15,7 @@ def risk(action, stock):
         return 'error, action must be buy or sell'
         
 def delete_all_positions():
-    api.delete_positions()
+    api.close_all_positions()
         
 def risk_buy(stock):
     df, time = get_dataframe(stock, 500)
