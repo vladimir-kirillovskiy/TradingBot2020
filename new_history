@@ -1,79 +1,79 @@
-# В portfolio history время хранится в формате timestamp, а в списке ордеров в iso с часовым поясом
-# Чтобы привести их к одному виду, проводим с ними различные манипуляции, которые наверняка можно упростить
+# В account activities и в portfolio history время хранится в разних форматах
 # Valid timeframe for days > 7 are [5Min 15Min 1H 1D]
 # Valid timeframe for days > 30 is 1D
 
 
 # Строим график изменения прибыли за указанное время
 def visual_history(api, period, time_frame, date_start, date_end):
-    history = api.get_portfolio_history(period=period, timeframe=time_frame, date_start=date_start, date_end=date_end) # Получаем всю историю аккаунта за указанное время
+    history = api.get_portfolio_history(period=period, timeframe=time_frame, date_start=date_start,
+                                        date_end=date_end)  # Получаем всю историю аккаунта за указанное время
     x = []
     for each in history.timestamp:
-        # Переводим время в формат "YYYY-MM-DDTHH:MM:SS.mmmmmm" или, если microsecond == 0, "YYYY-MM-DDTHH:MM:SS"
-        x.append(datetime.datetime.isoformat(datetime.datetime.fromtimestamp(each))) 
+        # Переводим время в формат "YYYY-MM-DDTHH:MM:SS"
+        x.append(datetime.datetime.isoformat(datetime.datetime.fromtimestamp(each)))
     y = history.equity
-    
-   return x, y
-   
-   
-# Получаем два словаря вида {datetime:symbol}, соответсвующие выполненным ордерам на покупку и продажу
+    return x, y
+
+
+# Получаем точки, в которые были исполненны ордеры на покупку/продажу
 def get_dots(api, date_start, date_end, time_frame, time_example='2020-07-16T16:30:00'):
-    orders = api.list_orders(status='closed', after=date_start, until=date_end, limit=500,)
-    correct_orders = [each for each in orders if each.status == 'filled']
-    sells = {}
-    buys = {}
-    for order in correct_orders:
-        isoform = datetime.datetime.fromtimestamp(datetime.datetime.timestamp(order.filled_at))
-        isoform = str(isoform)
-        isoform = isoform[:10]+'T'+isoform[11:]  # Приводим время к формату isoform
-        
-        # Округляем время, чтобы его точность совпадала с точностью времени на графике
-        if time_frame == '1Min':
-            isoform = isoform[:-10]
-            ost = time_example[-3:]
-            isoform += ost
-        elif time_frame == '5Min':
-            isoform_ost = isoform[-11]
-            ost = time_example[-4:]
-            isoform = isoform[:-11]
-            isoform_ost = (int(ost[0]) + ((int(isoform_ost) - int(ost[0])) // 5) * 5) % 10
-            isoform += str(isoform_ost) + ost[-3:]
-        elif time_frame == '15Min':
-            isoform_ost = isoform[-12:-10]
-            ost = time_example[-5:]
-            isoform_ost = (int(ost[:2]) + ((int(isoform_ost) - int(ost[:2])) // 15) * 15) % 60
-            if isoform_ost < 10:
-                isoform_ost = '0' + str(isoform_ost)
+    sells = set()  # Точки, в которые выполнены ордеры типа sell
+    buys = set()  # Точки, в которых выполнены ордеры типа buy
+    delta = datetime.timedelta(days=1)
+    day = date_start
+    while day <= date_end:  # Проходим все дни от начала до конца, каждый раз выгружая все активити типа fill, в итоге обращений к API будет столько, сколько дней мы рассматриваем
+        orders = api.get_activities(activity_types='FILL', date=day)  # Получаем активити за день
+        for order in orders:  # Для каждого ордера представляем дату в удобном для обработки формате (строка), отсекая при этом часовой пояс, чтобы далее можно было окргулить время
+            isoform = datetime.datetime.fromtimestamp(datetime.datetime.timestamp(order.transaction_time))  # Отсекаем часовой пояс
+            isoform = str(isoform)
+            isoform = isoform[:10] + 'T' + isoform[11:]  # Приводим время к формату isoform  # В итоге получится дата вида '2020-07-16T16:30:00', уже в нашем часовом поясе
+            
+            # Далее в зависимости от тайм фрейма окргуляем время, чтобы у точек ордеров и графика прибыли совпадала ось времени 
+            if time_frame == '1Min':
+                isoform = isoform[:-10]
+                ost = time_example[-3:]
+                isoform += ost
+            elif time_frame == '5Min':
+                isoform_ost = isoform[-11]
+                ost = time_example[-4:]
+                isoform = isoform[:-11]
+                isoform_ost = (int(ost[0]) + ((int(isoform_ost) - int(ost[0])) // 5) * 5) % 10
+                isoform += str(isoform_ost) + ost[-3:]
+            elif time_frame == '15Min':
+                isoform_ost = isoform[-12:-10]
+                ost = time_example[-5:]
+                isoform_ost = (int(ost[:2]) + ((int(isoform_ost) - int(ost[:2])) // 15) * 15) % 60
+                if isoform_ost < 10:
+                    isoform_ost = '0' + str(isoform_ost)
+                else:
+                    isoform_ost = str(isoform_ost)
+                isoform = isoform[:-12]
+                isoform += isoform_ost + ost[2:]
+            elif time_frame == '1H':
+                ost = time_example[-6:]
+                isoform = isoform[:-13]
+                isoform += ost
             else:
-                isoform_ost = str(isoform_ost)
-            isoform = isoform[:-12]
-            isoform += isoform_ost + ost[2:]
-        elif time_frame == '1H':
-            ost = time_example[-6:]
-            isoform = isoform[:-13]
-            isoform += ost
-        else:
-            ost = time_example[-9:]
-            isoform = isoform[:-16]
-            isoform += ost
+                ost = time_example[-9:]
+                isoform = isoform[:-16]
+                isoform += ost
+                
+            # Заполняем множества точек покупок и продаж    
+            if order.side == 'buy':
+                buys.add(isoform)
+            else:
+                sells.add(isoform)
+        day += delta  # Изменяем текущий день
+    return sells, buys  # Два множества
 
-        # Храним всё в словаре, чтобы в будущем была возможность показывать на графике еще и какие именно акции были куплены/проданы
-        if order.side == 'sell':
-            sells[isoform] = order.symbol
-        else:
-            buys[isoform] = order.symbol
 
-    return sells, buys
-    
 
-# Проверка корректности введеных данных
+# Проверка полученных данных, чтобы не возникало конфликтов с api
 def check_input(period, time_frame, date_start, date_end):
     if date_end and not date_start and not period:
         return 4  # 4 - Необходимо указать дополнительно или период, или дату начала
     elif date_start and not date_end and not period:
         return 5  # 5 - Необходимо указать дополнительно или период, или дату конца
-    num = 0
-    unit = ''
     if period:
         if period[-1] == 'n' and len(period) > 3:
             num = int(period[:-3])
@@ -105,6 +105,7 @@ def check_input(period, time_frame, date_start, date_end):
         end = datetime.date(int(end[0]), int(end[1]), int(end[2]))
     today = datetime.date.today()
 
+    # Если не задан период, приходится вычислять, сколько дней между date_start и date_end
     if (date_end and date_start and abs(int(str(end - start).split()[0])) > 7) and time_frame == '1Min':
         return 2  # 2 - Valid time_frame for days > 7 are [5Min 15Min 1H 1D]
     elif (date_start and not date_end and abs(int(str(today - start).split()[0])) > 7) and time_frame == '1Min':
@@ -114,16 +115,16 @@ def check_input(period, time_frame, date_start, date_end):
     elif (date_start and not date_end and abs(int(str(today - start).split()[0])) > 30) and time_frame != '1D':
         return 3  # Valid time_frame for days > 30 is 1D
     return 100  # Correct
-    
-    
+
+
 # Основная функция для отрисовки графика с маркерами и кривой
 def visualization(api, period=None, time_frame='1D', date_start=None, date_end=None):
     # Time_frame может принимать значения '1Min', '5Min', '15Min', '1H', or '1D'
     # Period: The duration of the data in <number> + <unit>, such as 1D, where <unit> can be D for day,
     # W for week, M for month and A for year.
-    # The date in “YYYY-MM-DD” format 
-    
-check = check_input(period, time_frame, date_start, date_end)
+    # The date in “YYYY-MM-DD” format
+
+    check = check_input(period, time_frame, date_start, date_end)  # Проверяем данные на корректность
     if check == 0:
         return 'Неверный time_frame'
     elif check == 1:
@@ -136,11 +137,31 @@ check = check_input(period, time_frame, date_start, date_end)
         return 'Необходимо указать дополнительно или период, или дату начала'
     elif check == 5:
         return 'Необходимо указать дополнительно или период, или дату конца '
-    else:
-        x, y = visual_history(api, period, time_frame, date_start, date_end)
+    elif check == 100:  # Если проверка успешно пройдена
+        x, y = visual_history(api, period, time_frame, date_start, date_end) # Получаем данные для построения графика прибыли, x - время, y - прибыль
 
-        sell_dots, buy_dots = get_dots(api, date_start, date_end, time_frame, time_example=x[0])
+        # Если не заданы date_start или date_end, или оба, вычисляем их сами, чтобы в будущем можно было вызывать функцию получения точек
+        if period and not date_start and not date_end:
+            if period[-1] == 'D':
+                days = period[:-1]
+                date_end = datetime.date.today()
+                date_start = date_end - datetime.timedelta(days=int(days))
+            else:
+                date_end = date_start = datetime.date.today()
+        elif period and not date_start:
+            if period[-1] == 'D':
+                days = period[:-1]
+                date_start = date_end - datetime.timedelta(days=int(days))
+            else:
+                date_start = datetime.date.today()
+        elif period and not date_end:
+            if period[-1] == 'D':
+                days = period[:-1]
+                date_end = date_start + datetime.timedelta(days=days)
+                
+        sell_dots, buy_dots = get_dots(api, date_start, date_end, time_frame, time_example=x[0])  # Получаем точки 
 
+        # Делим точки полученных множеств на три типа: только покупка, только продажа, и то, и другое
         sell_x = []  # Время, в которое были выполнены ордеры на покупку
         sell_y = []  # Прибыль в это время
 
@@ -150,17 +171,18 @@ check = check_input(period, time_frame, date_start, date_end)
         sell_buy_x = []  # Время, в которое были выполнены ордеры и на покупку, и на продажу
         sell_buy_y = []  # Прибыль в это временя
 
-        for i in range(len(x)):  # Заполняем списки
-            if x[i] in sell_dots.keys() and x[i] in buy_dots.keys():
+        for i in range(len(x)):
+            if x[i] in sell_dots and x[i] in buy_dots:
                 sell_buy_x.append(x[i])
                 sell_buy_y.append(y[i])
-            elif x[i] in sell_dots.keys():
+            elif x[i] in sell_dots:
                 sell_x.append(x[i])
                 sell_y.append(y[i])
-            elif x[i] in buy_dots.keys():
+            elif x[i] in buy_dots:
                 buy_x.append(x[i])
                 buy_y.append(y[i])
-
+        
+        # Само построение графика
         fig = go.Figure()
         fig.add_trace(go.Scatter(x=x, y=y, name='$', mode='lines'))
         fig.add_trace(
