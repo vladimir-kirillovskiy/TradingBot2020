@@ -11,7 +11,7 @@ price = 'no'
 
 # Ввод нужной акции для работы
 print("Введите акцию для отслеживания: ")
-#unit = input().upper()
+unit = input().upper()
 
 
 def on_open(ws):
@@ -41,23 +41,22 @@ def on_close(ws):
 
 def workplace():
     #Получение информации из API ALPACA
-    barset = api.get_barset('AAPL','day',limit=5)
-    aapl_bars = barset['AAPL']
+    barset = api.get_barset(unit,'day',limit=5)
+    aapl_bars = barset[unit]
     print('bars ', aapl_bars[-1].c)
     # Получение информации из Candlestick
-    df = get_dataframe('AAPL',100)
+    df = get_dataframe(unit,100)
     price = get_last_price(df[0],'c')
     print('price ', price)
     todo = check_indicator(df[0],'ma')
     print('todo: ', todo)
-    risks = risk(todo, 'AAPL')
-    print(risks[1])
+    risks = risk(todo, unit)
+    print('risks ', risks)
     if (price < 10000 and price < risks[0] and todo != "Skip"):
-        api.submit_order(symbol='AAPL',qty=risks[1],side=todo,type='limit',time_in_force='gtc',limit_price=risks[0])
+        api.submit_order(symbol=unit,qty=risks[1],side=todo,type='limit',time_in_force='gtc',limit_price=risks[0])
     
 socket = "wss://data.alpaca.markets/stream"
 
 ws = websocket.WebSocketApp(socket, on_open=on_open, on_message=on_message, on_close=on_close)
 ws.run_forever()
-
 
