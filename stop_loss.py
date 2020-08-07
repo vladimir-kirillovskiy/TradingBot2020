@@ -30,7 +30,7 @@ def stop_loss_buy(stock):
     ppos, time = get_dataframe(positions, 500)
     risk=0
     percent_risk=0.05
-    """for i in range len(api.list_positions()) :
+    """for i in range len(api.list_positions()) : #Ошибка в функции len()
         risk=ppos[i]+risk
     if risk<=money_on_account*percent_risk:
         if price < float(money_on_account)*percent:
@@ -57,7 +57,7 @@ def stop_loss_sell(stock):
     ppos, time = get_dataframe(positions, 500)
     risk=0
     percent_risk=0.05
-    """for i in range len(api.list_positions()) :
+    """for i in range len(api.list_positions()) :   #Ошибка в функции len()
         risk=ppos[i]+risk
     if risk<=money_on_account*percent_risk:
         if price > float(money_on_account)*percent:
