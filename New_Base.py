@@ -3,7 +3,8 @@ from alpaca_trade_api import StreamConn
 import time, websocket, json
 import os 
 import config
-import asyncio
+import replace_stop_loss
+import asyncio, Risk
 from Risk import risk, risk_buy, risk_sell
 from candlestick import get_dataframe, get_last_price, check_indicator
 api = tradeapi.REST('PKI5VSIHBY5QD660GUDG', '2BSNsP8amM0q7eFk0dq/xV4IOHhcYKQpcaWndd4u', 'https://paper-api.alpaca.markets',api_version='v2')
@@ -43,6 +44,8 @@ def workplace():
     #Получение информации из API ALPACA
     barset = api.get_barset(unit,'day',limit=5)
     aapl_bars = barset[unit]
+    #replace_stop_loss(api)
+    print('equity ')
     print('bars ', aapl_bars[-1].c)
     # Получение информации из Candlestick
     df = get_dataframe(unit,100)
@@ -51,9 +54,9 @@ def workplace():
     todo = check_indicator(df[0],'ma')
     print('todo: ', todo)
     risks = risk(todo, unit)
-    print('risks ', risks)
-    if (price < 10000 and price < risks[0] and todo != "Skip"):
-        api.submit_order(symbol=unit,qty=risks[1],side=todo,type='limit',time_in_force='gtc',limit_price=risks[0])
+    print('risks: ', risks)
+    if (risks[0]>0 and risks[1]>0):
+        #api.submit_order(symbol=unit,qty=qnty,side=todo,type='limit',time_in_force='gtc',limit_price=stop)
     
 socket = "wss://data.alpaca.markets/stream"
 
