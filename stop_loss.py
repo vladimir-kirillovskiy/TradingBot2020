@@ -8,7 +8,7 @@ def stop_loss(action, stock):
         return stop_loss_buy(stock)
     elif action == 'Sell' :
         stop_loss_sell(stock)
-     elif action == 'Skip' :
+    elif action == 'Skip' :
         pass
     else :
         return 'error, action must be buy or sell'
@@ -26,18 +26,18 @@ def stop_loss_buy(stock):
     atr = get_last_ATR(df)
     price = get_last_price(df, 'c')
     money_on_account = account.last_equity
-   positions=api.list_positions()
+    positions=api.list_positions()
     ppos, time = get_dataframe(positions, 500)
     risk=0
     percent_risk=0.05
-    for i in range len(api.list_positions()) :
+    """for i in range len(api.list_positions()) :
         risk=ppos[i]+risk
     if risk<=money_on_account*percent_risk:
         if price < float(money_on_account)*percent:
             stop = price - 2 * atr
             return stop
         else :
-            return 0
+            return 0"""
        
 
 
@@ -57,12 +57,11 @@ def stop_loss_sell(stock):
     ppos, time = get_dataframe(positions, 500)
     risk=0
     percent_risk=0.05
-    for i in range len(api.list_positions()) :
+    """for i in range len(api.list_positions()) :
         risk=ppos[i]+risk
     if risk<=money_on_account*percent_risk:
         if price > float(money_on_account)*percent:
             stop = price + 2 * atr
             return stop
         else :
-            return 0
-    
+            return 0"""
