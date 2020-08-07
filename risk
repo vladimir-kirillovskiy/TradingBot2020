@@ -18,23 +18,47 @@ def delete_all_positions():
     api.close_all_positions()
         
 def risk_buy(stock):
-    df, time = get_dataframe(stock, 500)
+    api = tradeapi.REST(
+        'PKATONHW8O227OL86EIT', # сюда вставляем  свой key
+        'SSt0X7PItaNTMKKW13ObZ3y9NwCsLPsnNkGxH91X', #cюда вставляем свой secret key
+        'https://paper-api.alpaca.markets'
+    )
+    account = api.get_account()
+    money_on_account = account.last_equity
+    df, time = get_dataframe(stock, 100)
     atr = get_last_ATR(df)
     price = get_last_price(df, 'c')
-    if price < 5000:
+    positions=api.list_positions()
+    ppos, time = get_dataframe(positions, 500)
+    risk=0
+    percent_risk=0.05
+    for i in range len(api.list_positions()) :
+        risk=ppos[i]+risk
+    if risk<=money_on_account*percent_risk:
         stop = price - 2 * atr
-        return stop, (stop / price) * 100   #сколько акций мы можем себе позволить, учитывая стоп лосс
-    else:
-        return 0, 0
+        onePercentFromTotal = money_on_account*0.01
+        return stop, onePercentFromTotal / (2*atr)    #сколько акций мы можем себе позволить, учитывая стоп лосс
       
 
 
 def risk_sell(stock):
-    df, time = get_dataframe(stock, 500)
+     api = tradeapi.REST(
+        'PKATONHW8O227OL86EIT', # сюда вставляем  свой key
+        'SSt0X7PItaNTMKKW13ObZ3y9NwCsLPsnNkGxH91X', #cюда вставляем свой secret key
+        'https://paper-api.alpaca.markets'
+    )
+    account = api.get_account()
+    money_on_account = account.last_equity
+    df, time = get_dataframe(stock, 100)
     atr = get_last_ATR(df)
     price = get_last_price(df, 'c')
-   if price > 5000:
+    positions=api.list_positions()
+    ppos, time = get_dataframe(positions, 500)
+    risk=0
+    percent_risk=0.05
+    for i in range len(api.list_positions()) :
+        risk=ppos[i]+risk
+    if risk<=money_on_account*percent_risk:
         stop = price + 2 * atr
-        return stop, (stop / price) * 100   #сколько акций мы можем себе позволить, учитывая стоп лосс
-    else:
-        return 0, 0
+        onePercentFromTotal = money_on_account*0.01
+        return stop, onePercentFromTotal / (2*atr)    #сколько акций мы можем себе позволить, учитывая стоп лосс
