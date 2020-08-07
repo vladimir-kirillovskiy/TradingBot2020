@@ -23,15 +23,17 @@ def risk_buy(stock):
     df, time = get_dataframe(stock, 100)
     atr = get_last_ATR(df)
     price = get_last_price(df, 'c')
-    percent_risk=0.05
+    percent_risk = 0.05
+    ppos = 0
     positions = api.list_orders()
-    price_positions=positions.avg_entry_price
-    price_positions.sum(ppos)
-    stop = price - 2 * atr
-    risk = ppos - stop
-    if risk <= money_on_account*percent_risk:
-        onePercentFromTotal = money_on_account*0.01
-        return stop, onePercentFromTotal / (2*atr)    #сколько акций мы можем себе позволить, учитывая стоп лосс
+    for i in range len(positions) :
+        ppos =  positions[i].avg_entry_price
+        stop_for_each_stock = stop_loss(positions[i])
+        stop = price - 2 * atr
+        risk = ppos - stop
+        if risk <= money_on_account*percent_risk:
+            onePercentFromTotal = money_on_account*0.01
+            return stop, onePercentFromTotal / (2*atr)    #сколько акций мы можем себе позволить, учитывая стоп лосс
       
 
 
@@ -44,14 +46,14 @@ def risk_sell(stock):
     stop = price + 2 * atr
     risk = price - stop
     percent_risk = 0.05
-    positions = api.list_orders()
-    price_positions=positions.avg_entry_price
-    price_positions.sum(ppos)
-    stop = price - 2 * atr
-    risk = ppos - stop
-    if risk <= money_on_account*percent_risk:
-        onePercentFromTotal = money_on_account*0.01
-        return stop, onePercentFromTotal / (2*atr)    #сколько акций мы можем себе позволить, учитывая стоп лосс
+     for i in range len(positions) :
+        ppos = positions[i].avg_entry_price
+        stop_for_each_stock = stop_loss(positions[i])
+        stop = price - 2 * atr
+        risk = ppos - stop
+        if risk <= money_on_account*percent_risk:
+            onePercentFromTotal = money_on_account*0.01
+            return stop, onePercentFromTotal / (2*atr)    #сколько акций мы можем себе позволить, учитывая стоп лосс
         
 def risk_buy_alternative(stock):
     account = api.get_account()
