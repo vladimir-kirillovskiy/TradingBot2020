@@ -24,8 +24,8 @@ def risk_buy(stock):
     atr = get_last_ATR(df)
     price = get_last_price(df, 'c')
     percent_risk=0.05
-    positions = api.list_positions()
-    price_positions, time = get_dataframe(stock, 100)
+    positions = api.list_orders()
+    price_positions=positions.avg_entry_price
     price_positions.sum(ppos)
     stop = price - 2 * atr
     risk = ppos - stop
@@ -44,8 +44,8 @@ def risk_sell(stock):
     stop = price + 2 * atr
     risk = price - stop
     percent_risk = 0.05
-    positions = api.list_positions()
-    price_positions, time = get_dataframe(stock, 100)
+    positions = api.list_orders()
+    price_positions=positions.avg_entry_price
     price_positions.sum(ppos)
     stop = price - 2 * atr
     risk = ppos - stop
