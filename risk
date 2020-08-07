@@ -24,9 +24,12 @@ def risk_buy(stock):
     atr = get_last_ATR(df)
     price = get_last_price(df, 'c')
     percent_risk=0.05
+    positions = api.list_positions()
+    price_positions, time = get_dataframe(stock, 100)
+    price_positions.sum(ppos)
     stop = price - 2 * atr
-    risk=price - stop
-    if risk<=money_on_account*percent_risk:
+    risk = ppos - stop
+    if risk <= money_on_account*percent_risk:
         onePercentFromTotal = money_on_account*0.01
         return stop, onePercentFromTotal / (2*atr)    #сколько акций мы можем себе позволить, учитывая стоп лосс
       
@@ -39,8 +42,47 @@ def risk_sell(stock):
     atr = get_last_ATR(df)
     price = get_last_price(df, 'c')
     stop = price + 2 * atr
-    risk=price - stop
-    percent_risk=0.05
-    if risk<=money_on_account*percent_risk:
+    risk = price - stop
+    percent_risk = 0.05
+    positions = api.list_positions()
+    price_positions, time = get_dataframe(stock, 100)
+    price_positions.sum(ppos)
+    stop = price - 2 * atr
+    risk = ppos - stop
+    if risk <= money_on_account*percent_risk:
         onePercentFromTotal = money_on_account*0.01
         return stop, onePercentFromTotal / (2*atr)    #сколько акций мы можем себе позволить, учитывая стоп лосс
+        
+def risk_buy_alternative(stock):
+    account = api.get_account()
+    money_on_account = account.last_equity
+    df, time = get_dataframe(stock, 100)
+    atr = get_last_ATR(df)
+    price = get_last_price(df, 'c')
+    percent_risk = 0.05
+    money_on_account_start = 100000
+    ppos = money_on_account_start - money_on_account
+    stop = price - 2 * atr
+    risk = ppos - stop
+    if risk <= money_on_account*percent_risk:
+        onePercentFromTotal = money_on_account*0.01
+        return stop, onePercentFromTotal / (2*atr)    #сколько акций мы можем себе позволить, учитывая стоп лосс
+      
+
+
+def risk_sell_alternative(stock):
+    account = api.get_account()
+    money_on_account = account.last_equity
+    df, time = get_dataframe(stock, 100)
+    atr = get_last_ATR(df)
+    price = get_last_price(df, 'c')
+    stop = price + 2 * atr
+    risk = price - stop
+    percent_risk = 0.05
+    money_on_account_start = 100000
+    ppos = money_on_account_start - money_on_account
+    p = price + 2 * atr
+    risk = ppos - stop
+    if risk <= money_on_account*percent_risk:
+        onePercentFromTotal = money_on_account*0.01
+        return stop, onePercentFromTotal / (2*atr)    #сколько акций мы можем себе позволить, учитывая стоп лосс        
