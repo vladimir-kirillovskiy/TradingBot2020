@@ -2,6 +2,10 @@
 # Valid timeframe for days > 7 are [5Min 15Min 1H 1D]
 # Valid timeframe for days > 30 is 1D
 
+import plotly.graph_objects as go
+import alpaca_trade_api as tradeapi
+import datetime
+
 
 # Строим график изменения прибыли за указанное время
 def visual_history(api, period, time_frame, date_start, date_end):
