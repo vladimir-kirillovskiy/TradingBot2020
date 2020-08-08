@@ -1,6 +1,6 @@
 from visualization.candlestick import get_last_ATR, get_dataframe, get_last_price
 import alpaca_trade_api as tradeapi
-
+from stop_loss import stop_loss_buy, stop_loss_sell
 # аргументом функции является название акции
 
 
