@@ -26,11 +26,13 @@ def risk_buy(stock):
     percent_risk = 0.05
     price_pos = 0
     general_risk = 0
-    positions = api.list_orders()
+    positions = api.list_positions()
+    orders = api.list_orders()
     for stock in positions:
         price_pos = stock.avg_entry_price
-        stop_for_this_stock = stock.order_stop_price
-        risk = price_pos - stop_for_this_stock
+        stop_for_this_stock = orders[stock].order_stop_price
+        qty = stock.qty
+        risk = (price_pos - stop_for_this_stock) *qty
         general_risk += risk
     if general_risk <= money_on_account * percent_risk:
         stop = price - 2 * atr
@@ -48,11 +50,13 @@ def risk_sell(stock):
     percent_risk = 0.05
     price_pos = 0
     general_risk = 0
-    positions = api.list_orders()
-    ffor stock in positions:
+    positions = api.list_positions()
+    orders = api.list_orders()
+    for stock in positions:
         price_pos = stock.avg_entry_price
-        stop_for_this_stock = stock.order_stop_price
-        risk = price_pos - stop_for_this_stock
+        stop_for_this_stock = orders[stock].order_stop_price
+        qty = stock.qty
+        risk = (price_pos - stop_for_this_stock) *qty
         general_risk += risk
     if general_risk <= money_on_account * percent_risk:
         stop = price + 2 * atr
