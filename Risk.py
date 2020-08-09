@@ -8,7 +8,7 @@ def risk(action, stock):
     if action == 'Buy':
         return risk_buy(stock)
     elif action == 'Sell' :
-        risk_sell(stock)
+        return risk_sell(stock)
     elif action == 'Skip' :
         pass
     else :
