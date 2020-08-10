@@ -4,8 +4,8 @@ import time, websocket, json
 import os 
 import config
 import replace_stop_loss
-import asyncio, Risk
-from Risk import risk, risk_buy, risk_sell
+import asyncio
+from Risk import risk
 from candlestick import get_dataframe, get_last_price, check_indicator
 api = tradeapi.REST('PKI5VSIHBY5QD660GUDG', '2BSNsP8amM0q7eFk0dq/xV4IOHhcYKQpcaWndd4u', 'https://paper-api.alpaca.markets',api_version='v2')
 
@@ -53,13 +53,12 @@ def workplace():
     print('price ', price)
     todo = check_indicator(df[0],'ma')
     print('todo: ', todo)
-    risks = risk(todo, unit)
-    print('risks: ', risks)
-    if (risks[0]>0 and risks[1]>0):
-        #api.submit_order(symbol=unit,qty=qnty,side=todo,type='limit',time_in_force='gtc',limit_price=stop)
+    stop_price, qnty = risk(todo, unit)
+    print('risks: ', stop_price, qnty)
+    if (stop_price>0 and qnty>0):
+        api.submit_order(symbol=unit,qty=qnty,side=todo,type='limit',time_in_force='gtc',stop_loss=stop_price)
     
 socket = "wss://data.alpaca.markets/stream"
 
 ws = websocket.WebSocketApp(socket, on_open=on_open, on_message=on_message, on_close=on_close)
 ws.run_forever()
-
