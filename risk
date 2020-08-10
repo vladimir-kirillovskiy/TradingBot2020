@@ -4,11 +4,11 @@ from stop_loss import stop_loss_buy, stop_loss_sell
 # аргументом функции является название акции
 
 
-def risk(action, stock):
+def risk(action, stock, api):
     if action == 'Buy':
-        return risk_buy(stock)
+        return risk_buy(stock, api)
     elif action == 'Sell' :
-        return risk_sell(stock)
+        return risk_sell(stock, api)
     elif action == 'Skip' :
         pass
      else :
@@ -17,12 +17,7 @@ def risk(action, stock):
 def delete_all_positions():
     api.close_all_positions()
         
-def risk_buy(stock):
-    api = tradeapi.REST(
-        'PKATONHW8O227OL86EIT', # сюда вставляем  свой key
-        'SSt0X7PItaNTMKKW13ObZ3y9NwCsLPsnNkGxH91X', #cюда вставляем свой secret key
-        'https://paper-api.alpaca.markets'
-    )
+def risk_buy(stock, api):
     account = api.get_account()
     money_on_account = account.last_equity
     df, time = get_dataframe(stock, 100)
@@ -46,12 +41,7 @@ def risk_buy(stock):
       
 
 
-def risk_sell(stock):
-    api = tradeapi.REST(
-        'PKATONHW8O227OL86EIT', # сюда вставляем  свой key
-        'SSt0X7PItaNTMKKW13ObZ3y9NwCsLPsnNkGxH91X', #cюда вставляем свой secret key
-        'https://paper-api.alpaca.markets'
-    )
+def risk_sell(stock, api):
     account = api.get_account()
     money_on_account = account.last_equity
     df, time = get_dataframe(stock, 100)
