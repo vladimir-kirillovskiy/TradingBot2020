@@ -56,8 +56,8 @@ def workplace():
     stop_price, qnty = risk(todo, unit)
     print('risks: ', stop_price, qnty)
     if (stop_price>0 and qnty>0):
-        api.submit_order(symbol=unit,qty=qnty,side=lower(todo),type='market',time_in_force='gtc')
-        if lower(todo)=='buy':
+        api.submit_order(symbol=unit,qty=qnty,side=todo.lower(),type='market',time_in_force='gtc')
+        if todo.lower()=='buy':
             api.submit_order(symbol=unit,qty=qnty,side='sell',type='stop',time_in_force='gtc',stop_loss=stop_price)
         else:
             api.submit_order(symbol=unit,qty=qnty,side='buy',type='stop',time_in_force='gtc',stop_loss=stop_price)
@@ -67,3 +67,4 @@ socket = "wss://data.alpaca.markets/stream"
 
 ws = websocket.WebSocketApp(socket, on_open=on_open, on_message=on_message, on_close=on_close)
 ws.run_forever()
+
