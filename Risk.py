@@ -22,7 +22,7 @@ def risk_buy(stock):
     price = get_last_price(df, 'c')
     if price < 10000:
         stop = price - 2 * atr
-        return stop, (stop / price) * 100   #сколько акций мы можем себе позволить, учитывая стоп лосс
+        return stop, (stop / price) * 10   #сколько акций мы можем себе позволить, учитывая стоп лосс
     else:
         return 0, 0
       
@@ -34,6 +34,6 @@ def risk_sell(stock):
     price = get_last_price(df, 'c')
     if price > 10000:
         stop = price + 2 * atr
-        return stop, (stop / price) * 100   #сколько акций мы можем себе позволить, учитывая стоп лосс
+        return stop, (stop / price) * 10   #сколько акций мы можем себе позволить, учитывая стоп лосс
     else:
         return 0, 0
