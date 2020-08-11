@@ -11,7 +11,7 @@ def risk(action, stock, api):
         return risk_sell(stock, api)
     elif action == 'Skip' :
         pass
-     else :
+    else :
         return 'error, action must be buy or sell'
         
 def delete_all_positions():
