@@ -55,7 +55,8 @@ def workplace():
     todo = check_indicator(df[0],'hhll')
     print('todo: ', todo)
     stop_price, qnty = risk(todo, unit,api)
-    print('risks: ', stop_price, qnty)
+    
+    print('risks: ', int(stop_price), int(qnty))
     total = qnty * price
     money = float(account.last_equity)
     if total>money:
@@ -63,7 +64,7 @@ def workplace():
     if (stop_price>0 and qnty>0):
         api.submit_order(
             symbol=unit,
-            qty=qnty,
+            qty=int(qnty),
             side=todo.lower(),
             type='market',
             time_in_force='gtc',
