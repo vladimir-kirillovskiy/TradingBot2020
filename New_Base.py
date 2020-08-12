@@ -3,7 +3,7 @@ from alpaca_trade_api import StreamConn
 import time, websocket, json
 import os 
 import config
-import replace_stop_loss
+from replace_stop_loss import replace_stop_loss
 import asyncio
 from Risk import risk
 from candlestick import get_dataframe, get_last_price, check_indicator
@@ -43,26 +43,39 @@ def on_close(ws):
 def workplace():
     #Получение информации из API ALPACA
     barset = api.get_barset(unit,'day',limit=5)
+    account = api.get_account()
     aapl_bars = barset[unit]
-    #replace_stop_loss(api)
+    replace_stop_loss(api)
     print('equity ')
     print('bars ', aapl_bars[-1].c)
     # Получение информации из Candlestick
     df = get_dataframe(unit,100)
     price = get_last_price(df[0],'c')
     print('price ', price)
-    todo = check_indicator(df[0],'ma')
+    todo = check_indicator(df[0],'hhll')
     print('todo: ', todo)
     stop_price, qnty = risk(todo, unit,api)
     print('risks: ', stop_price, qnty)
+    total = qnty * price
+    money = float(account.last_equity)
     if (stop_price>0 and qnty>0):
-        api.submit_order(
-            symbol=unit,
-            qty=qnty,side=todo.lower(),
-            type='market',
-            time_in_force='gtc',
-            order_class='oto',
-            stop_loss={'stop_price':stop_price})
+        if (total<money):
+            api.submit_order(
+                symbol=unit,
+                qty=qnty,side=todo.lower(),
+                type='market',
+                time_in_force='gtc',
+                order_class='oto',
+                stop_loss={'stop_price':stop_price})
+        else:
+            qnty = money / price
+            api.submit_order(
+                symbol=unit,
+                qty=qnty,side=todo.lower(),
+                type='market',
+                time_in_force='gtc',
+                order_class='oto',
+                stop_loss={'stop_price':stop_price})
         
         
     
