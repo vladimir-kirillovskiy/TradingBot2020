@@ -6,10 +6,10 @@ def replace_stop_loss(api):
     opened_orders = api.list_orders()  # Получаем все открытые заявки
     for each in opened_orders:
         if each.order_type == 'stop':  # Рассматриваем только стоп-ордеры
-            new_stop = stop_loss(each.side, each.symbol)  # С помощью функции Саши получаем новый стоплосс
+            new_stop = stop_loss(each.side, each.symbol, api)  # С помощью функции Саши получаем новый стоплосс
             if each.side == 'sell':
-                if new_stop > int(each.stop_price):  # Если акция выросла в цене, обновляем стоплосс
+                if new_stop > float(each.stop_price):  # Если акция выросла в цене, обновляем стоплосс
                     api.replace_order(order_id=each.id, stop_price=new_stop)
             else:
-                if new_stop < int(each.stop_price):  # Если акции подешевели, обнавляем стоплосс
+                if new_stop < float(each.stop_price):  # Если акции подешевели, обнавляем стоплосс
                     api.replace_order(order_id=each.id, stop_price=new_stop)
