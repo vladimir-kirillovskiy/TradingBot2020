@@ -7,7 +7,7 @@ def stop_loss(action, stock):
     if action == 'Buy':
         return stop_loss_buy(stock)
     elif action == 'Sell' :
-        stop_loss_sell(stock)
+        return stop_loss_sell(stock)
      elif action == 'Skip' :
         pass
     else :
