@@ -7,9 +7,9 @@ from stop_loss import stop_loss_buy, stop_loss_sell
 def risk(action, stock, api):
     if action.lower() == 'buy':
         return risk_buy(stock, api)
-    elif action.lower == 'sell' :
+    elif action.lower() == 'sell' :
         return risk_sell(stock, api)
-    elif action == 'Skip' :
+    elif action.lower() == 'skip':
         pass
     else :
         return 'error, action must be buy or sell'
