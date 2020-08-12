@@ -14,12 +14,12 @@ def risk(action, stock, api):
     else :
         return 'error, action must be buy or sell'
         
-def delete_all_positions():
+def delete_all_positions(api):
     api.close_all_positions()
         
 def risk_buy(stock, api):
     account = api.get_account()
-    money_on_account = account.last_equity
+    money_on_account = float(account.last_equity)
     df, time = get_dataframe(stock, 100)
     atr = get_last_ATR(df)
     price = get_last_price(df, 'c')
@@ -43,7 +43,7 @@ def risk_buy(stock, api):
 
 def risk_sell(stock, api):
     account = api.get_account()
-    money_on_account = account.last_equity
+    money_on_account = float(account.last_equity)
     df, time = get_dataframe(stock, 100)
     atr = get_last_ATR(df)
     price = get_last_price(df, 'c')
@@ -63,9 +63,9 @@ def risk_sell(stock, api):
         onePercentFromTotal = money_on_account * 0.01
         return stop, onePercentFromTotal / (2 * atr) 
         
-def risk_buy_alternative(stock):
+def risk_buy_alternative(stock,api):
     account = api.get_account()
-    money_on_account = account.last_equity
+    money_on_account = float(account.last_equity)
     df, time = get_dataframe(stock, 100)
     atr = get_last_ATR(df)
     price = get_last_price(df, 'c')
@@ -80,9 +80,9 @@ def risk_buy_alternative(stock):
       
 
 
-def risk_sell_alternative(stock):
+def risk_sell_alternative(stock,api):
     account = api.get_account()
-    money_on_account = account.last_equity
+    money_on_account = float(account.last_equity)
     df, time = get_dataframe(stock, 100)
     atr = get_last_ATR(df)
     price = get_last_price(df, 'c')
