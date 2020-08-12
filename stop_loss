@@ -3,11 +3,11 @@ import alpaca_trade_api as tradeapi
 
 # аргументом функции является название акции
 
-def stop_loss(action, stock):
+def stop_loss(action, stock, api):
     if action == 'Buy':
-        return stop_loss_buy(stock)
+        return stop_loss_buy(stock, api)
     elif action == 'Sell' :
-        return stop_loss_sell(stock)
+        return stop_loss_sell(stock, api)
      elif action == 'Skip' :
         pass
     else :
@@ -15,13 +15,7 @@ def stop_loss(action, stock):
         
         
         
-def stop_loss_buy(stock):
-    api = tradeapi.REST(
-        'PKATONHW8O227OL86EIT', # сюда вставляем  свой key
-        'SSt0X7PItaNTMKKW13ObZ3y9NwCsLPsnNkGxH91X', #cюда вставляем свой secret key
-        'https://paper-api.alpaca.markets'
-    )
-    account = api.get_account()
+def stop_loss_buy(stock, api):
     df, time = get_dataframe(stock, 100)
     atr = get_last_ATR(df)
     price = get_last_price(df, 'c')
@@ -31,13 +25,7 @@ def stop_loss_buy(stock):
        
 
 
-def stop_loss_sell(stock):
-    api = tradeapi.REST(
-        'PKATONHW8O227OL86EIT', # сюда вставляем  свой key
-        'SSt0X7PItaNTMKKW13ObZ3y9NwCsLPsnNkGxH91X', #cюда вставляем свой secret key
-        'https://paper-api.alpaca.markets'
-    )
-    account = api.get_account()
+def stop_loss_sell(stock, api):
     df, time = get_dataframe(stock, 100)
     atr = get_last_ATR(df)
     price = get_last_price(df, 'c')
