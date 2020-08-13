@@ -32,7 +32,7 @@ def risk_buy(stock, api):
         price_pos = stock.avg_entry_price
         stop_price = list(filter(lambda x: x.symbol == stock.symbol, orders))[0].stop_price
         qty = stock.qty
-        risk = (int(price_pos) - int(stop_price)) *int(qty)
+        risk = (float(price_pos) - float(stop_price)) *int(qty)
         general_risk += risk
     if general_risk <= money_on_account * percent_risk:
         stop = price - 2 * atr
@@ -56,7 +56,7 @@ def risk_sell(stock, api):
         price_pos = stock.avg_entry_price
         stop_price = list(filter(lambda x: x.symbol == stock.symbol, orders))[0].stop_price
         qty = stock.qty
-        risk = (int(price_pos) - int(stop_price)) *int(qty)
+        risk = (float(price_pos) - float(stop_price)) *int(qty)
         general_risk += risk
     if general_risk <= money_on_account * percent_risk:
         stop = price + 2 * atr
