@@ -19,7 +19,7 @@ def delete_all_positions(api):
         
 def risk_buy(stock, api):
     account = api.get_account()
-    money_on_account = float(account.last_equity)
+    money_on_account = float(account.buying_power)
     df, time = get_dataframe(stock, 100)
     atr = get_last_ATR(df)
     price = get_last_price(df, 'c')
