@@ -7,7 +7,7 @@ from replace_stop_loss import replace_stop_loss
 import asyncio
 from Risk import risk
 from candlestick import get_dataframe, get_last_price, check_indicator
-api = tradeapi.REST('PKI5VSIHBY5QD660GUDG', '2BSNsP8amM0q7eFk0dq/xV4IOHhcYKQpcaWndd4u', 'https://paper-api.alpaca.markets',api_version='v2')
+api = tradeapi.REST(config.KEY_ID, config.SECRET_Key, config.BASE_URL,api_version=config.API_VERSION)
 
 
 # Ввод нужной акции для работы
