@@ -6,7 +6,6 @@ import plotly.graph_objects as go
 import config
 import json
 import pandas as pd
-import numpy as np
 import requests
 
 
@@ -30,7 +29,7 @@ def set_ATR(data, n):
 
 
 # Функция записывает в data информацию обо всех индикаторах
-def set_indicators(data, n1, n2, n3, n4, LIMIT):
+def set_indicators(data, n1=10, n2=50, n3=21, n4=52, LIMIT=100):
     data['cmean' + str(n1)] = data['c'].rolling(n1).mean()
     data['cmean' + str(n2)] = data['c'].rolling(n2).mean()
     data['llow' + str(n3)] = data['l'].rolling(n3).min()
@@ -63,16 +62,16 @@ def set_ATR_bands(data):
 
 
 # Функция возвращает data со всеми данными по акциям
-def get_dataframe(TICKERS, LIMIT, START=None, END=None):
+def get_dataframe(TICKERS, n1=10, n2=50, n3=21, n4=52, interval='minute', LIMIT=100, START=None, END=None):
     # Получаем данные с Alpaca о текущем состоянии
 
     start_time = time.time()
     if START is None and END is None:
-        minute_bars_url = config.BARS_URL + '/minute?symbols={}&limit={}'.format(TICKERS, LIMIT)
+        interval_bars_url = config.BARS_URL + '/{}?symbols={}&limit={}'.format(interval, TICKERS, LIMIT)
     else:
-        minute_bars_url = config.BARS_URL + '/minute?symbols={}&limit={}&start={}&end={}'.format(TICKERS, LIMIT, START,
-                                                                                                 END)
-    r = requests.get(minute_bars_url, headers=config.HEADERS)
+        interval_bars_url = config.BARS_URL + '/{}?symbols={}&limit={}&start={}&end={}'.format(interval, TICKERS, LIMIT,
+                                                                                               START, END)
+    r = requests.get(interval_bars_url, headers=config.HEADERS)
     data = json.dumps(r.json(), indent=4)
     # Записываем их в файл, затем считываем в формате json
     with open('data.txt', 'w') as output:
@@ -100,14 +99,14 @@ def get_dataframe(TICKERS, LIMIT, START=None, END=None):
 
 TICKERS = 'AAPL'  # Указать интересующие тикеры, если нужно несколько, то перечислить через запятую (Пока работает
 # только для 1)
-LIMIT = 100  # Количество интервалов для отображения
-# Настройка показателей индикаторов
-n1 = 10
-n2 = 50
-nmax = max(n1, n2)
-n3 = 21
-n4 = 52
-nmax2 = max(n3, n4)
+# LIMIT = 100  # Количество интервалов для отображения
+# # Настройка показателей индикаторов
+# n1 = 10
+# n2 = 50
+# nmax = max(n1, n2)
+# n3 = 21
+# n4 = 52
+# nmax2 = max(n3, n4)
 INDICATOR = 'ma'  # Указываем какой индикатор показывать (ma - средние, hhll - минимумы)
 
 
@@ -176,7 +175,9 @@ def add_anotations(fig, df, type):
 
 
 # Функция отображает candlestick график и индикаторы
-def visualize(data):
+def visualize(data, n1=10, n2=50, n3=21, n4=52, LIMIT=100):
+    nmax = max(n1, n2)
+    nmax2 = max(n3, n4)
     data_draw = data.tail(LIMIT - nmax + 1)
     candlestick = go.Candlestick(x=data_draw['t'], open=data_draw['o'], high=data_draw['h'], low=data_draw['l'],
                                  close=data_draw['c'])
