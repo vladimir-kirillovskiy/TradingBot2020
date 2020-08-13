@@ -58,7 +58,7 @@ def workplace():
     
     print('risks: ', int(stop_price), int(qnty))
     total = qnty * price
-    money = float(account.last_equity)
+    money = float(account.buying_power)
     if total>money:
         qnty = money/price
     if (stop_price>0 and qnty>0):
