@@ -19,7 +19,7 @@ def stop_loss_buy(stock, api):
     df, time = get_dataframe(stock, 100)
     atr = get_last_ATR(df)
     price = get_last_price(df, 'c')
-    stop = price - 2 * atr
+    stop = price + 2 * atr
     return stop
       
 
@@ -27,5 +27,5 @@ def stop_loss_sell(stock, api):
     df, time = get_dataframe(stock, 100)
     atr = get_last_ATR(df)
     price = get_last_price(df, 'c')
-    stop = price + 2 * atr
+    stop = price - 2 * atr
     return stop
