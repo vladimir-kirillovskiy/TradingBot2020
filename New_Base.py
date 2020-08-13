@@ -46,7 +46,6 @@ def workplace():
     account = api.get_account()
     aapl_bars = barset[unit]
     replace_stop_loss(api)
-    print('equity ')
     print('bars ', aapl_bars[-1].c)
     # Получение информации из Candlestick
     df = get_dataframe(unit,100)
