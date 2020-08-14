@@ -50,12 +50,13 @@ def workplace():
     # Получение информации из Candlestick
     df = get_dataframe(unit,100)
     price = get_last_price(df[0],'c')
-    print('price ', price)
+    print('Current price: ', price)
     todo = check_indicator(df[0],'hhll')
-    print('todo: ', todo)
+    print('action: ', todo)
     stop_price, qnty = risk(todo, unit,api)
     
-    print('risks: ', int(stop_price), int(qnty))
+    print('Stop price: ', int(stop_price))
+    print('Quantity: ', int(qnty))
     total = qnty * price
     money = float(account.buying_power)
     if total>money:
