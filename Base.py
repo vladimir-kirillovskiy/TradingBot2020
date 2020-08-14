@@ -52,10 +52,10 @@ def workplace():
     price = get_last_price(df[0],'c')
     print('Current price: ', price)
     todo = check_indicator(df[0],'hhll')
-    print('action: ', todo)
+    print('Action: ', todo)
     stop_price, qnty = risk(todo, unit,api)
     
-    print('Stop price: ', int(stop_price))
+    print('Stop price: ', stop_price)
     print('Quantity: ', int(qnty))
     total = qnty * price
     money = float(account.buying_power)
