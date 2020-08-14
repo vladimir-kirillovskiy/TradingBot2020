@@ -5,12 +5,12 @@ from stop_loss import stop_loss_buy, stop_loss_sell
 
 
 def risk(action, stock, api):
-    if action == 'Buy':
+    if action.lower() == 'buy':
         return risk_buy(stock, api)
-    elif action == 'Sell' :
+    elif action.lower() == 'sell' :
         return risk_sell(stock, api)
-    elif action == 'Skip' :
-        pass
+    elif action.lower() == 'skip' :
+        return 0, 0
     else :
         return 'error, action must be buy or sell'
         
@@ -32,7 +32,7 @@ def risk_buy(stock, api):
         price_pos = stock.avg_entry_price
         stop_price = list(filter(lambda x: x.symbol == stock.symbol, orders))[0].stop_price
         qty = stock.qty
-        risk = (float(price_pos) - float(stop_price)) *int(qty)
+        risk = (int(price_pos) - int(stop_price)) *int(qty)
         general_risk += risk
     if general_risk <= money_on_account * percent_risk:
         stop = price - 2 * atr
@@ -56,43 +56,10 @@ def risk_sell(stock, api):
         price_pos = stock.avg_entry_price
         stop_price = list(filter(lambda x: x.symbol == stock.symbol, orders))[0].stop_price
         qty = stock.qty
-        risk = (float(price_pos) - float(stop_price)) *int(qty)
+        risk = (int(price_pos) - int(stop_price)) *int(qty)
         general_risk += risk
     if general_risk <= money_on_account * percent_risk:
         stop = price + 2 * atr
         onePercentFromTotal = money_on_account * 0.01
         return stop, onePercentFromTotal / (2 * atr) 
         
-def risk_buy_alternative(stock,api):
-    account = api.get_account()
-    money_on_account = float(account.buying_power)
-    df, time = get_dataframe(stock, 100)
-    atr = get_last_ATR(df)
-    price = get_last_price(df, 'c')
-    percent_risk = 0.05
-    money_on_account_start = 100000
-    ppos = money_on_account_start - money_on_account
-    stop = price - 2 * atr
-    risk = ppos - stop
-    if risk <= money_on_account*percent_risk:
-        onePercentFromTotal = money_on_account*0.01
-        return stop, onePercentFromTotal / (2*atr)    #сколько акций мы можем себе позволить, учитывая стоп лосс
-      
-
-
-def risk_sell_alternative(stock,api):
-    account = api.get_account()
-    money_on_account = float(account.buying_power)
-    df, time = get_dataframe(stock, 100)
-    atr = get_last_ATR(df)
-    price = get_last_price(df, 'c')
-    stop = price + 2 * atr
-    risk = price - stop
-    percent_risk = 0.05
-    money_on_account_start = 100000
-    ppos = money_on_account_start - money_on_account
-    p = price + 2 * atr
-    risk = ppos - stop
-    if risk <= money_on_account*percent_risk:
-        onePercentFromTotal = money_on_account*0.01
-        return stop, onePercentFromTotal / (2*atr)    #сколько акций мы можем себе позволить, учитывая стоп лосс
