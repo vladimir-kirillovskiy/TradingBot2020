@@ -38,6 +38,8 @@ def risk_buy(stock, api):
         stop = price - 2 * atr
         onePercentFromTotal = money_on_account * 0.01
         return stop, onePercentFromTotal / (2 * atr) 
+    else:
+        return 0,0
       
 
 
@@ -61,5 +63,10 @@ def risk_sell(stock, api):
     if general_risk <= money_on_account * percent_risk:
         stop = price + 2 * atr
         onePercentFromTotal = money_on_account * 0.01
-        return stop, onePercentFromTotal / (2 * atr) 
+        return stop, onePercentFromTotal / (2 * atr)
+    else:
+        return 0,0 
         
+
+
+
