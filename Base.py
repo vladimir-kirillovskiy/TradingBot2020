@@ -61,19 +61,21 @@ def workplace():
     if total>money:
         qnty = money/price
     if (stop_price>0 and qnty>0):
-        api.submit_order(
-            symbol=unit,
-            qty=int(qnty),
-            side=todo.lower(),
-            type='market',
-            time_in_force='gtc',
-            order_class='oto',
-            stop_loss={'stop_price':stop_price})
+        try:
+            api.submit_order(
+                symbol=unit,
+                qty=int(qnty),
+                side=todo.lower(),
+                type='market',
+                time_in_force='gtc',
+                order_class='oto',
+                stop_loss={'stop_price':stop_price})
+        except Exception as error:
+            print(error)        
         
     
 socket = "wss://data.alpaca.markets/stream"
 
 ws = websocket.WebSocketApp(socket, on_open=on_open, on_message=on_message, on_close=on_close)
 ws.run_forever()
-
 
