@@ -42,11 +42,8 @@ def on_close(ws):
 
 def workplace():
     #Получение информации из API ALPACA
-    barset = api.get_barset(unit,'day',limit=5)
     account = api.get_account()
-    aapl_bars = barset[unit]
     replace_stop_loss(api)
-    print('bars ', aapl_bars[-1].c)
     # Получение информации из Candlestick
     df = get_dataframe(unit,100)
     price = get_last_price(df[0],'c')
