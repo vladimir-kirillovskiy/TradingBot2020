@@ -41,6 +41,10 @@ def on_close(ws):
 
 def workplace():
     watch_list = api.get_watchlist('6281dc22-4ecc-47ab-8239-eba886159ffa')
+    dif_symbols = 0
+    for each in watch_list.assets:
+        dif_symbols = dif_symbols+1
+    print(dif_symbols)
     for each in watch_list.assets:
         unit = each['symbol']
         print('Symbol: ', unit)
@@ -67,7 +71,7 @@ def workplace():
             try:
                 api.submit_order(
                     symbol=unit,
-                    qty=int(qnty),
+                    qty=int(int(qnty)/dif_symbols),
                     side=todo.lower(),
                     type='market',
                     time_in_force='gtc',
@@ -81,3 +85,4 @@ socket = "wss://data.alpaca.markets/stream"
 
 ws = websocket.WebSocketApp(socket, on_open=on_open, on_message=on_message, on_close=on_close)
 ws.run_forever()
+
