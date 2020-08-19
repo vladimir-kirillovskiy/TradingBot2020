@@ -6,7 +6,6 @@ import plotly.graph_objects as go
 import config
 import json
 import pandas as pd
-import numpy as np
 import requests
 
 
@@ -30,13 +29,16 @@ def set_ATR(data, n):
 
 
 # Функция записывает в data информацию обо всех индикаторах
-def set_indicators(data, n1, n2, n3, n4, LIMIT):
+def set_indicators(data, n1=10, n2=50, n3=21, n4=52, n5=21, LIMIT=100):
+    n6 = n5//2
     data['cmean' + str(n1)] = data['c'].rolling(n1).mean()
     data['cmean' + str(n2)] = data['c'].rolling(n2).mean()
     data['llow' + str(n3)] = data['l'].rolling(n3).min()
     data['llow' + str(n4)] = data['l'].rolling(n4).min()
     data['hhigh' + str(n3)] = data['h'].rolling(n3).max()
     data['hhigh' + str(n4)] = data['h'].rolling(n4).max()
+    data['hhigh' + str(n5)] = data['h'].rolling(n5).max()
+    data['llow' + str(n5)] = data['l'].rolling(n5).min()
     for i in range(1, LIMIT):
         if (data.loc[i, 'cmean' + str(n1)] - data.loc[i, 'cmean' + str(n2)]) < 0 < (
                 data.loc[i - 1, 'cmean' + str(n1)] - data.loc[i - 1, 'cmean' + str(n2)]):
@@ -54,6 +56,15 @@ def set_indicators(data, n1, n2, n3, n4, LIMIT):
             data.loc[i, 'hhll'] = "Buy"
         else:
             data.loc[i, 'hhll'] = "Skip"
+        if data.loc[i, 'hhigh'+str(n5)] <= data.loc[i, 'h']:
+            data.loc[i, 'turtle'] = 'Sell'
+            data.loc[i, 'close'] = data['l'].rolling(n6).min()
+        elif data.loc[i, 'llow'+str(n5)] >= data.loc[i, 'h']:
+            data.loc[i, 'turtle'] = 'Buy'
+            data.loc[i, 'close'] = data['h'].rolling(n6).max()
+        else:
+            data.loc[i, 'turtle'] = 'Skip'
+            data.loc[i, 'close'] = 100000000
 
 
 # Функция записывает в data информацию об ATR bands
@@ -63,16 +74,16 @@ def set_ATR_bands(data):
 
 
 # Функция возвращает data со всеми данными по акциям
-def get_dataframe(TICKERS, LIMIT, START=None, END=None):
+def get_dataframe(TICKERS, n1=10, n2=50, n3=21, n4=52, interval='minute', LIMIT=100, START=None, END=None):
     # Получаем данные с Alpaca о текущем состоянии
 
     start_time = time.time()
     if START is None and END is None:
-        minute_bars_url = config.BARS_URL + '/minute?symbols={}&limit={}'.format(TICKERS, LIMIT)
+        interval_bars_url = config.BARS_URL + '/{}?symbols={}&limit={}'.format(interval, TICKERS, LIMIT)
     else:
-        minute_bars_url = config.BARS_URL + '/minute?symbols={}&limit={}&start={}&end={}'.format(TICKERS, LIMIT, START,
-                                                                                                 END)
-    r = requests.get(minute_bars_url, headers=config.HEADERS)
+        interval_bars_url = config.BARS_URL + '/{}?symbols={}&limit={}&start={}&end={}'.format(interval, TICKERS, LIMIT,
+                                                                                               START, END)
+    r = requests.get(interval_bars_url, headers=config.HEADERS)
     data = json.dumps(r.json(), indent=4)
     # Записываем их в файл, затем считываем в формате json
     with open('data.txt', 'w') as output:
@@ -100,14 +111,6 @@ def get_dataframe(TICKERS, LIMIT, START=None, END=None):
 
 TICKERS = 'AAPL'  # Указать интересующие тикеры, если нужно несколько, то перечислить через запятую (Пока работает
 # только для 1)
-LIMIT = 100  # Количество интервалов для отображения
-# Настройка показателей индикаторов
-n1 = 10
-n2 = 50
-nmax = max(n1, n2)
-n3 = 21
-n4 = 52
-nmax2 = max(n3, n4)
 INDICATOR = 'ma'  # Указываем какой индикатор показывать (ma - средние, hhll - минимумы)
 
 
@@ -176,7 +179,9 @@ def add_anotations(fig, df, type):
 
 
 # Функция отображает candlestick график и индикаторы
-def visualize(data):
+def visualize(data, n1=10, n2=50, n3=21, n4=52, LIMIT=100):
+    nmax = max(n1, n2)
+    nmax2 = max(n3, n4)
     data_draw = data.tail(LIMIT - nmax + 1)
     candlestick = go.Candlestick(x=data_draw['t'], open=data_draw['o'], high=data_draw['h'], low=data_draw['l'],
                                  close=data_draw['c'])
@@ -210,7 +215,5 @@ def check_indicator(df, type):
         return df.tail(1)['ma'].iloc[0]
     elif type == 'hhll':
         return df.tail(1)['hhll'].iloc[0]
-
-
-#data, time = get_dataframe(TICKERS, 100)
-#print(time)
+    elif type == 'turtle':
+        return df.tail(1)['turtle'].iloc[0]
