@@ -8,7 +8,7 @@ import asyncio
 from Risk import risk
 from candlestick import get_dataframe, get_last_price, check_indicator
 api = tradeapi.REST(config.KEY_ID, config.SECRET_Key, config.BASE_URL,api_version=config.API_VERSION)
-
+test = 'test'
 
 # Ввод нужной акции для работы
 print("Введите акцию для отслеживания: ")
@@ -41,12 +41,15 @@ def on_close(ws):
 
 def workplace():
     watch_list = api.get_watchlist('6281dc22-4ecc-47ab-8239-eba886159ffa')
-    dif_symbols = watch_list.len()
     replace_stop_loss(api)
+    
     watch_list = api.get_watchlists()
+    
     watch_list = watch_list[0].id
     mylist = api.get_watchlist(watch_list)
+    
     dif_symbols = len(mylist.assets)
+    print('Number of symbols: ', dif_symbols)
     for each in mylist.assets:
         unit = each['symbol']
         print('Symbol: ', unit)
@@ -87,3 +90,4 @@ socket = "wss://data.alpaca.markets/stream"
 
 ws = websocket.WebSocketApp(socket, on_open=on_open, on_message=on_message, on_close=on_close)
 ws.run_forever()
+
