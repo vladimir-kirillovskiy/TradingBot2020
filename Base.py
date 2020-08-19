@@ -47,7 +47,7 @@ def workplace():
     watch_list = watch_list[0].id
     mylist = api.get_watchlist(watch_list)
     dif_symbols = len(mylist.assets)
-    for each in watch_list.assets:
+    for each in mylist.assets:
         unit = each['symbol']
         print('Symbol: ', unit)
     #Получение информации из API ALPACA
