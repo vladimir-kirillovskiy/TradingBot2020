@@ -41,23 +41,25 @@ def on_close(ws):
 
 def workplace():
     watch_list = api.get_watchlist('6281dc22-4ecc-47ab-8239-eba886159ffa')
-    dif_symbols = 0
-    for each in watch_list.assets:
-        dif_symbols = dif_symbols+1
-    print(dif_symbols)
+    dif_symbols = watch_list.len()
+    replace_stop_loss(api)
+    watch_list = api.get_watchlists()
+    watch_list = watch_list[0].id
+    mylist = api.get_watchlist(watch_list)
+    dif_symbols = len(mylist.assets)
     for each in watch_list.assets:
         unit = each['symbol']
         print('Symbol: ', unit)
     #Получение информации из API ALPACA
         account = api.get_account()
-        replace_stop_loss(api)
+        
     
 
     # Получение информации из Candlestick
         df = get_dataframe(unit,100)
         price = get_last_price(df[0],'c')
         print('Current price: ', price)
-        todo = check_indicator(df[0],'hhll')
+        todo = check_indicator(df[0],'ma')
         print('Action: ', todo)
         stop_price, qnty = risk(todo, unit,api)
     
@@ -85,4 +87,3 @@ socket = "wss://data.alpaca.markets/stream"
 
 ws = websocket.WebSocketApp(socket, on_open=on_open, on_message=on_message, on_close=on_close)
 ws.run_forever()
-
