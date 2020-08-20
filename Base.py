@@ -10,6 +10,7 @@ from candlestick import get_dataframe, get_last_price, check_indicator
 api = tradeapi.REST(config.KEY_ID, config.SECRET_Key, config.BASE_URL,api_version=config.API_VERSION)
 test = 'test'
 
+
 # Ввод нужной акции для работы
 print("Введите акцию для отслеживания: ")
 #unit = input().lower()
@@ -51,32 +52,43 @@ def workplace():
     dif_symbols = len(mylist.assets)
     print('Number of symbols: ', dif_symbols)
     for each in mylist.assets:
+
+
         unit = each['symbol']
         print('Symbol: ', unit)
-    #Получение информации из API ALPACA
         account = api.get_account()
-        
-    
 
-    # Получение информации из Candlestick
+
         df = get_dataframe(unit,100)
         price = get_last_price(df[0],'c')
         print('Current price: ', price)
-        todo = check_indicator(df[0],'ma')
+
+        todo = check_indicator(df[0],'hhll')
+        trend = check_indicator(df[0],'ma')
+        if (trend == 'Buy' and trend == todo):
+            todo = 'Buy'
+        elif (trend == 'Sell' and trend == todo):
+            todo = 'Sell'
+        else:
+            todo = 'Skip'
         print('Action: ', todo)
+
+
         stop_price, qnty = risk(todo, unit,api)
-    
+        qnty = int(qnty)
         print('Stop price: ', stop_price)
         print('Quantity: ', int(qnty))
+
         total = qnty * price
         money = float(account.buying_power)
+
         if total>money:
-            qnty = money/price
-        if (stop_price>0 and qnty>0):
+            qnty = int(money/price)
+        if (qnty>0):
             try:
                 api.submit_order(
                     symbol=unit,
-                    qty=int(int(qnty)/dif_symbols),
+                    qty=int(qnty/dif_symbols),
                     side=todo.lower(),
                     type='market',
                     time_in_force='gtc',
