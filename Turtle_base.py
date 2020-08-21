@@ -51,7 +51,6 @@ def workplace():
         print('Symbol: ', unit)
         # Получение информации из API ALPACA
         account = api.get_account()
-        replace_stop_loss(api)
 
         # Получение информации из Candlestick
         df = get_dataframe(unit, 100)
@@ -79,7 +78,8 @@ def workplace():
                     side=todo.lower(),
                     type='market',
                     time_in_force='gtc',
-                    order_class='simple')
+                    order_class='oto',
+                    stop_loss={'stop_price': stop_price})
 
                 api.submit_order(
                     symbol=unit,
