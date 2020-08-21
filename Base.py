@@ -11,7 +11,9 @@ api = tradeapi.REST(config.KEY_ID, config.SECRET_Key, config.BASE_URL,api_versio
 test = 'test'
 
 
-
+# Ввод нужной акции для работы
+print("Введите акцию для отслеживания: ")
+#unit = input().lower()
 
 def on_open(ws):
     print("opened")
@@ -39,7 +41,6 @@ def on_close(ws):
     print("closed connection")
 
 def workplace():
-    watch_list = api.get_watchlist('6281dc22-4ecc-47ab-8239-eba886159ffa')
     replace_stop_loss(api)
     
     watch_list = api.get_watchlists()
@@ -60,12 +61,13 @@ def workplace():
         df = get_dataframe(unit,100)
         price = get_last_price(df[0],'c')
         print('Current price: ', price)
-
+        
         todo = check_indicator(df[0],'hhll')
-        trend = check_indicator(df[0],'ma')
-        if (trend == 'Buy' and trend == todo):
+        trend10 = df[0]['cmean10'].iloc[-1]
+        trend50 = df[0]['cmean50'].iloc[-1]
+        if (trend10 > trend50 and todo == 'Buy'):
             todo = 'Buy'
-        elif (trend == 'Sell' and trend == todo):
+        elif (trend10 < trend50 and todo == 'Sell'):
             todo = 'Sell'
         else:
             todo = 'Skip'
