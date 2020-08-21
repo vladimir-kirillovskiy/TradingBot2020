@@ -9,11 +9,8 @@ from Risk import risk
 from candlestick import get_dataframe, get_last_price, check_indicator
 api = tradeapi.REST(config.KEY_ID, config.SECRET_Key, config.BASE_URL,api_version=config.API_VERSION)
 test = 'test'
-
-
-# Ввод нужной акции для работы
-print("Введите акцию для отслеживания: ")
-#unit = input().lower()
+n1 = 10
+n2 = 50
 
 def on_open(ws):
     print("opened")
@@ -63,6 +60,8 @@ def workplace():
         print('Current price: ', price)
         
         todo = check_indicator(df[0],'hhll')
+        df[0]['cmean10'] = df[0]['c'].rolling(n1).mean()
+        df[0]['cmean50'] = df[0]['c'].rolling(n2).mean()
         trend10 = df[0]['cmean10'].iloc[-1]
         trend50 = df[0]['cmean50'].iloc[-1]
         if (trend10 > trend50 and todo == 'Buy'):
@@ -102,4 +101,3 @@ socket = "wss://data.alpaca.markets/stream"
 
 ws = websocket.WebSocketApp(socket, on_open=on_open, on_message=on_message, on_close=on_close)
 ws.run_forever()
-
