@@ -2,7 +2,7 @@ import alpaca_trade_api as tradeapi
 import websocket
 import json
 import config
-from stop_lose import replace_stop_loss
+from replace_stop_loss import replace_stop_loss
 from Risk import risk
 from candlestick import get_dataframe, get_last_price, check_indicator
 from close import replace_limit
