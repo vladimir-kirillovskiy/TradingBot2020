@@ -11,9 +11,7 @@ api = tradeapi.REST(config.KEY_ID, config.SECRET_Key, config.BASE_URL,api_versio
 test = 'test'
 
 
-# Ввод нужной акции для работы
-print("Введите акцию для отслеживания: ")
-#unit = input().lower()
+
 
 def on_open(ws):
     print("opened")
