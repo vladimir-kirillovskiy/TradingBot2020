@@ -95,6 +95,8 @@ def workplace():
                         stop_loss={'stop_price':stop_price})
                 except Exception as error:
                     print(error)
+    else:
+        print('Рынок закрыт')
 
 
         
