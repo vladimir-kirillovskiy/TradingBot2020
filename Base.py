@@ -8,12 +8,6 @@ import asyncio
 from Risk import risk
 from candlestick import get_dataframe, get_last_price, check_indicator
 api = tradeapi.REST(config.KEY_ID, config.SECRET_Key, config.BASE_URL,api_version=config.API_VERSION)
-test = 'test'
-n1 = 10
-n2 = 50
-
-# Ввод нужной акции для работы
-
 
 def on_open(ws):
     print("opened")
@@ -43,9 +37,10 @@ def on_close(ws):
 def workplace():
     clock = api.get_clock()
     if clock.is_open:
-
-        replace_stop_loss(api)
-    
+        try:
+            replace_stop_loss(api)
+        except Exception as error:
+            print(error)
         watch_list = api.get_watchlists()
         watch_list = watch_list[0].id
         mylist = api.get_watchlist(watch_list)
@@ -108,4 +103,3 @@ socket = "wss://data.alpaca.markets/stream"
 
 ws = websocket.WebSocketApp(socket, on_open=on_open, on_message=on_message, on_close=on_close)
 ws.run_forever()
-
