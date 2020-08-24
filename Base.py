@@ -62,7 +62,6 @@ def workplace():
 
 
             df = get_dataframe(unit,100)
-            print(df[0].iloc[-1])
             price = get_last_price(df[0],'c')
             print('Current price: ', price)
 
@@ -109,3 +108,4 @@ socket = "wss://data.alpaca.markets/stream"
 
 ws = websocket.WebSocketApp(socket, on_open=on_open, on_message=on_message, on_close=on_close)
 ws.run_forever()
+
