@@ -68,13 +68,11 @@ def workplace():
 
             todo = check_indicator(df[0],'hhll')
 
-            #df[0]['cmean10'] = df[0]['c'].rolling(n1).mean()
-            #df[0]['cmean50'] = df[0]['c'].rolling(n2).mean()
-            trend10 = df[0].iloc[-1]['cmean100']
-            trend50 = df[0].iloc[-1]['cmean50']
-            if (trend10 > trend50 and todo == 'Buy'):
+            
+            trend = df[0].iloc[-1]['trend']
+            if (trend == 'Buy' and todo == 'Buy'):
                 todo = 'Buy'
-            elif (trend10 < trend50 and todo == 'Sell'):
+            elif (trend == 'Sell' and todo == 'Sell'):
                 todo = 'Sell'
             else:
                 todo = 'Skip'
@@ -111,4 +109,3 @@ socket = "wss://data.alpaca.markets/stream"
 
 ws = websocket.WebSocketApp(socket, on_open=on_open, on_message=on_message, on_close=on_close)
 ws.run_forever()
-
