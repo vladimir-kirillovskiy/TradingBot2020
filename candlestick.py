@@ -33,6 +33,7 @@ def set_ATR(data, n):
 def set_indicators(data, n1, n2, n3, n4, LIMIT):
     data['cmean' + str(n1)] = data['c'].rolling(n1).mean()
     data['cmean' + str(n2)] = data['c'].rolling(n2).mean()
+    data['trend'] = np.where((data['cmean' + str(n1)] < data['cmean' + str(n2)]), 'Sell', np.where((data['cmean' + str(n1)] == data['cmean' + str(n2)]), 'Skip', 'Buy'))
     data['llow' + str(n3)] = data['l'].rolling(n3).min()
     data['llow' + str(n4)] = data['l'].rolling(n4).min()
     data['hhigh' + str(n3)] = data['h'].rolling(n3).max()
@@ -212,5 +213,6 @@ def check_indicator(df, type):
         return df.tail(1)['hhll'].iloc[0]
 
 
-#data, time = get_dataframe(TICKERS, 100)
-#print(time)
+#data, time = get_dataframe(TICKERS, 1000)
+#print(data.trend.value_counts())
+#visualize(data)
