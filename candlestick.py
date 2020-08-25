@@ -30,6 +30,7 @@ def set_ATR(data, n):
 
 # Функция записывает в data информацию обо всех индикаторах
 def set_indicators(data, n1=10, n2=50, n3=21, n4=52, n5=21, LIMIT=100):
+    print('start set_ind')
     n6 = n5//2
     data['cmean' + str(n1)] = data['c'].rolling(n1).mean()
     data['cmean' + str(n2)] = data['c'].rolling(n2).mean()
@@ -40,41 +41,53 @@ def set_indicators(data, n1=10, n2=50, n3=21, n4=52, n5=21, LIMIT=100):
     data['hhigh' + str(n5)] = data['h'].rolling(n5).max()
     data['llow' + str(n5)] = data['l'].rolling(n5).min()
     for i in range(1, LIMIT):
-        if (data.loc[i, 'cmean' + str(n1)] - data.loc[i, 'cmean' + str(n2)]) < 0 < (
-                data.loc[i - 1, 'cmean' + str(n1)] - data.loc[i - 1, 'cmean' + str(n2)]):
-            data.loc[i, 'ma'] = "Sell"
-        elif (data.loc[i, 'cmean' + str(n1)] - data.loc[i, 'cmean' + str(n2)]) > 0 > (
-                data.loc[i - 1, 'cmean' + str(n1)] - data.loc[i - 1, 'cmean' + str(n2)]):
-            data.loc[i, 'ma'] = "Buy"
-        else:
-            data.loc[i, 'ma'] = "Skip"
-        if data.loc[i, 'llow' + str(n3)] == data.loc[i, 'llow' + str(n4)] and data.loc[i, 'hhigh' + str(n3)] != \
-                data.loc[i, 'hhigh' + str(n4)]:
-            data.loc[i, 'hhll'] = "Sell"
-        elif data.loc[i, 'hhigh' + str(n3)] == data.loc[i, 'hhigh' + str(n4)] and data.loc[i, 'llow' + str(n3)] != \
-                data.loc[i, 'llow' + str(n4)]:
-            data.loc[i, 'hhll'] = "Buy"
-        else:
-            data.loc[i, 'hhll'] = "Skip"
+        # if (data.loc[i, 'cmean' + str(n1)] - data.loc[i, 'cmean' + str(n2)]) < 0 < (
+        #         data.loc[i - 1, 'cmean' + str(n1)] - data.loc[i - 1, 'cmean' + str(n2)]):
+        #     data.loc[i, 'ma'] = "Sell"
+        # elif (data.loc[i, 'cmean' + str(n1)] - data.loc[i, 'cmean' + str(n2)]) > 0 > (
+        #         data.loc[i - 1, 'cmean' + str(n1)] - data.loc[i - 1, 'cmean' + str(n2)]):
+        #     data.loc[i, 'ma'] = "Buy"
+        # else:
+        #     data.loc[i, 'ma'] = "Skip"
+        # if data.loc[i, 'llow' + str(n3)] == data.loc[i, 'llow' + str(n4)] and data.loc[i, 'hhigh' + str(n3)] != \
+        #         data.loc[i, 'hhigh' + str(n4)]:
+        #     data.loc[i, 'hhll'] = "Sell"
+        # elif data.loc[i, 'hhigh' + str(n3)] == data.loc[i, 'hhigh' + str(n4)] and data.loc[i, 'llow' + str(n3)] != \
+        #         data.loc[i, 'llow' + str(n4)]:
+        #     data.loc[i, 'hhll'] = "Buy"
+        # else:
+        #     data.loc[i, 'hhll'] = "Skip"
         if data.loc[i, 'hhigh'+str(n5)] <= data.loc[i, 'h']:
             data.loc[i, 'turtle'] = 'Sell'
-            data.loc[i, 'close'] = data['l'].rolling(n6).min()
         elif data.loc[i, 'llow'+str(n5)] >= data.loc[i, 'h']:
             data.loc[i, 'turtle'] = 'Buy'
-            data.loc[i, 'close'] = data['h'].rolling(n6).max()
         else:
             data.loc[i, 'turtle'] = 'Skip'
-            data.loc[i, 'close'] = 100000000
+
+        if data.loc[i, 'turtle'] == 'Sell':
+            try:
+                data['close'] = data['l'].rolling(n6).min()
+            except Exception as e:
+                print(e.__class__)
+        elif data.loc[i, 'turtle'] == 'Buy':
+            try:
+                data['close'] = data['h'].rolling(n6).max()
+            except Exception as e:
+                print(e.__class__)
+        else:
+            data['close'] = 100000000
+    print('end set_ind')
 
 
 # Функция записывает в data информацию об ATR bands
 def set_ATR_bands(data):
     data['ATR_High'] = data[['h', 'ATR']].sum(axis=1)
     data['ATR_Low'] = data['l'] - data['ATR']
+    return data
 
 
 # Функция возвращает data со всеми данными по акциям
-def get_dataframe(TICKERS, n1=10, n2=50, n3=21, n4=52, interval='minute', LIMIT=100, START=None, END=None):
+def get_dataframe(TICKERS, n1=10, n2=50, n3=21, n4=52, n5=21, interval='minute', LIMIT=100, START=None, END=None):
     # Получаем данные с Alpaca о текущем состоянии
 
     start_time = time.time()
@@ -90,7 +103,6 @@ def get_dataframe(TICKERS, n1=10, n2=50, n3=21, n4=52, interval='minute', LIMIT=
         output.write(data)
     with open('data.txt') as input:
         data = json.load(input)
-
     data_dict = {'t': [], 'o': [], 'h': [], 'l': [], 'c': []}  # Словарь для создания DataFrame
 
     # На основании информации заполняем data_dict, затем создаем DataFrame на его основе
@@ -102,14 +114,17 @@ def get_dataframe(TICKERS, n1=10, n2=50, n3=21, n4=52, interval='minute', LIMIT=
         data_dict['l'].append(elem['l'])
         data_dict['c'].append(elem['c'])
     data = pd.DataFrame(data_dict)
-    set_indicators(data, n1, n2, n3, n4, LIMIT)
+
+    set_indicators(data, n1, n2, n3, n4, n5, LIMIT)
+    print('ind ok')
     data['ATR'] = set_ATR(data, 15)
-    set_ATR_bands(data)
+    print('atr ok')
+    data = set_ATR_bands(data)
+    print('atr bands ok')
+    return data
 
-    return data, time.time() - start_time
 
-
-TICKERS = 'AAPL'  # Указать интересующие тикеры, если нужно несколько, то перечислить через запятую (Пока работает
+# TICKERS = 'AAPL'  # Указать интересующие тикеры, если нужно несколько, то перечислить через запятую (Пока работает
 # только для 1)
 INDICATOR = 'ma'  # Указываем какой индикатор показывать (ma - средние, hhll - минимумы)
 
@@ -140,8 +155,9 @@ def get_last_ATR(df):
 
 
 # Функция возвращает последнюю цену (o - открытия, c - закрытия, h - наибольшую, l - наименьшую) Пример в test.py
-def get_last_price(df, type):
-    return df[type].iloc[-1]
+def get_last_price(df, typ):
+    print('get last price')
+    return df[typ].iloc[-1]
 
 
 def add_anotations(fig, df, type):
@@ -179,7 +195,7 @@ def add_anotations(fig, df, type):
 
 
 # Функция отображает candlestick график и индикаторы
-def visualize(data, n1=10, n2=50, n3=21, n4=52, LIMIT=100):
+def visualize(data, n1=10, n2=50, n3=21, n4=52, n5=21, LIMIT=100):
     nmax = max(n1, n2)
     nmax2 = max(n3, n4)
     data_draw = data.tail(LIMIT - nmax + 1)
