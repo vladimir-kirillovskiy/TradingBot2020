@@ -101,7 +101,7 @@ def get_dataframe(TICKERS, LIMIT, START=None, END=None):
 
 TICKERS = 'AAPL'  # Указать интересующие тикеры, если нужно несколько, то перечислить через запятую (Пока работает
 # только для 1)
-LIMIT = 100  # Количество интервалов для отображения
+LIMIT = 400  # Количество интервалов для отображения
 # Настройка показателей индикаторов
 n1 = 10
 n2 = 50
@@ -213,6 +213,6 @@ def check_indicator(df, type):
         return df.tail(1)['hhll'].iloc[0]
 
 
-#data, time = get_dataframe(TICKERS, 1000)
+#data, time = get_dataframe(TICKERS, LIMIT)
 #print(data.trend.value_counts())
 #visualize(data)
