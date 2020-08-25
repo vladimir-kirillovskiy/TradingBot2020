@@ -8,7 +8,7 @@ import asyncio
 from Risk import risk
 from candlestick import get_dataframe, get_last_price, check_indicator
 api = tradeapi.REST(config.KEY_ID, config.SECRET_Key, config.BASE_URL,api_version=config.API_VERSION)
-
+print('Начало работы...')
 def on_open(ws):
     print("opened")
     auth_data = {
@@ -36,65 +36,70 @@ def on_close(ws):
 
 def workplace():
     clock = api.get_clock()
+    close = clock.next_close
     if clock.is_open:
-        try:
-            replace_stop_loss(api)
-        except Exception as error:
-            print(error)
-        watch_list = api.get_watchlists()
-        watch_list = watch_list[0].id
-        mylist = api.get_watchlist(watch_list)
-    
-        dif_symbols = len(mylist.assets)
-        print('Number of symbols: ', dif_symbols)
+        if close.total_seconds()>900:
+            try:
+                replace_stop_loss(api)
+            except Exception as error:
+                print(error)
+            watch_list = api.get_watchlists()
+            watch_list = watch_list[0].id
+            mylist = api.get_watchlist(watch_list)
 
-        for each in mylist.assets:
+            dif_symbols = len(mylist.assets)
+            print('Number of symbols: ', dif_symbols)
 
-
-            unit = each['symbol']
-            print('Symbol: ', unit)
-            account = api.get_account()
+            for each in mylist.assets:
 
 
-            df = get_dataframe(unit,100)
-            price = get_last_price(df[0],'c')
-            print('Current price: ', price)
-
-            todo = check_indicator(df[0],'hhll')
-
-            
-            trend = df[0].iloc[-1]['trend']
-            if (trend == 'Buy' and todo == 'Buy'):
-                todo = 'Buy'
-            elif (trend == 'Sell' and todo == 'Sell'):
-                todo = 'Sell'
-            else:
-                todo = 'Skip'
-            print('Action: ', todo)
+                unit = each['symbol']
+                print('Symbol: ', unit)
+                account = api.get_account()
 
 
-            stop_price, qnty = risk(todo, unit,api)
-            qnty = int(qnty)
-            print('Stop price: ', stop_price)
-            print('Quantity: ', int(qnty))
+                df = get_dataframe(unit,100)
+                price = get_last_price(df[0],'c')
+                print('Current price: ', price)
 
-            total = qnty * price
-            money = float(account.buying_power)
+                todo = check_indicator(df[0],'hhll')
 
-            if total>money:
-                qnty = int(money/price)
-            if (qnty>0):
-                try:
-                    api.submit_order(
-                        symbol=unit,
-                        qty=int(qnty/dif_symbols),
-                        side=todo.lower(),
-                        type='market',
-                        time_in_force='gtc',
-                        order_class='oto',
-                        stop_loss={'stop_price':stop_price})
-                except Exception as error:
-                    print(error)
+
+                trend = df[0].iloc[-1]['trend']
+                if (trend == 'Buy' and todo == 'Buy'):
+                    todo = 'Buy'
+                elif (trend == 'Sell' and todo == 'Sell'):
+                    todo = 'Sell'
+                else:
+                    todo = 'Skip'
+                print('Action: ', todo)
+
+
+                stop_price, qnty = risk(todo, unit,api)
+                qnty = int(qnty)
+                print('Stop price: ', stop_price)
+                print('Quantity: ', int(qnty))
+
+                total = qnty * price
+                money = float(account.buying_power)
+
+                if total>money:
+                    qnty = int(money/price)
+                if (qnty>0):
+                    try:
+                        api.submit_order(
+                            symbol=unit,
+                            qty=int(qnty/dif_symbols),
+                            side=todo.lower(),
+                            type='market',
+                            time_in_force='gtc',
+                            order_class='oto',
+                            stop_loss={'stop_price':stop_price})
+                    except Exception as error:
+                        print(error)
+        else:
+            api.close_all_positions()
+            api.cancel_all_orders()
     else:
         print('Рынок закрыт')
 
