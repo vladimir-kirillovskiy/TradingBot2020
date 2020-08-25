@@ -9,9 +9,6 @@ from close import replace_limit
 
 api = tradeapi.REST(config.KEY_ID, config.SECRET_Key, config.BASE_URL, api_version=config.API_VERSION)
 
-# Ввод нужной акции для работы
-print("Введите акцию для отслеживания: ")
-
 
 # unit = input().lower()
 
@@ -40,57 +37,69 @@ def on_close(ws):
 
 
 def workplace():
-    replace_limit(api)
-    watch_list = api.get_watchlist('6281dc22-4ecc-47ab-8239-eba886159ffa')
-    dif_symbols = 0
-    for each in watch_list.assets:
-        dif_symbols = dif_symbols + 1
-    print(dif_symbols)
-    for each in watch_list.assets:
-        unit = each['symbol']
-        print('Symbol: ', unit)
-        # Получение информации из API ALPACA
-        account = api.get_account()
+    clock = api.get_clock()
+    if clock.is_open:
+        try:
+            replace_limit(api)
+            print("replace_limit ok")
+        except Exception as error:
+            print(error)
 
-        # Получение информации из Candlestick
-        df = get_dataframe(unit, 100)
-        price = get_last_price(df[0], 'c')
-        print('Current price: ', price)
-        todo = check_indicator(df[0], 'turtle')
-        if todo == 'Buy':
-            back = 'sell'
-        elif todo == 'Sell':
-            back = 'buy'
-        print('Action: ', todo)
-        stop_price, qnty = risk(todo, unit, api)
+        watch_list = api.get_watchlists()
+        watch_list = watch_list[0].id
+        mylist = api.get_watchlist(watch_list)
+        dif_symbols = len(mylist.assets)
+        print('Number of symbols: ', dif_symbols)
+        for each in mylist.assets:
+            unit = each['symbol']
+            print('Symbol: ', unit)
+            # Получение информации из API ALPACA
+            account = api.get_account()
+            print('get_account ok')
 
-        print('Stop price: ', stop_price)
-        print('Quantity: ', int(qnty))
-        total = qnty * price
-        money = float(account.buying_power)
-        if total > money:
-            qnty = money / price
-        if stop_price > 0 and qnty > 0:
-            try:
-                api.submit_order(
-                    symbol=unit,
-                    qty=int(int(qnty) / dif_symbols),
-                    side=todo.lower(),
-                    type='market',
-                    time_in_force='gtc',
-                    order_class='oto',
-                    stop_loss={'stop_price': stop_price})
+            # Получение информации из Candlestick
+            df = get_dataframe(unit, LIMIT=100)
+            price = get_last_price(df, 'c')
+            print('Current price: ', price)
+            todo = check_indicator(df, 'turtle')
+            if todo == 'Buy':
+                back = 'sell'
+            elif todo == 'Sell':
+                back = 'buy'
+            print('Action: ', todo)
+            stop_price, qnty = risk(todo, unit, api)
+            qnty = int(qnty)
 
-                api.submit_order(
-                    symbol=unit,
-                    qty=int(int(qnty) / dif_symbols),
-                    side=back,
-                    type='limit',
-                    time_in_force='gtc',
-                    order_class='simple',
-                    limit_price=df[0]['close'])
-            except Exception as error:
-                print(error)
+            print('Stop price: ', stop_price)
+            print('Quantity: ', qnty)
+            total = qnty * price
+            money = float(account.buying_power)
+            if total > money:
+                qnty = int(money/price)
+            if stop_price > 0 and qnty > 0:
+                try:
+                    api.submit_order(
+                        symbol=unit,
+                        qty=int(int(qnty) / dif_symbols),
+                        side=todo.lower(),
+                        type='market',
+                        time_in_force='gtc',
+                        order_class='oto',
+                        stop_loss={'stop_price': stop_price})
+
+                    api.submit_order(
+                        symbol=unit,
+                        qty=int(int(qnty) / dif_symbols),
+                        side=back,
+                        type='limit',
+                        time_in_force='gtc',
+                        order_class='simple',
+                        limit_price=df[0]['close'])
+                except Exception as error:
+                    print(error)
+    else:
+        print('Рынок закрыт')
+        print(clock.next_open)
 
 
 socket = "wss://data.alpaca.markets/stream"
