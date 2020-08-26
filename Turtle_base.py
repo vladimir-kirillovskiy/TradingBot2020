@@ -58,7 +58,8 @@ def workplace():
             print('get_account ok')
 
             # Получение информации из Candlestick
-            df = get_dataframe(unit, LIMIT=100)
+            limit = 100
+            df = get_dataframe(unit, LIMIT=limit)
             price = get_last_price(df, 'c')
             print('Current price: ', price)
             todo = check_indicator(df, 'turtle')
@@ -86,7 +87,9 @@ def workplace():
                         time_in_force='gtc',
                         order_class='oto',
                         stop_loss={'stop_price': stop_price})
-
+                except Exception as error:
+                    print(error)
+                try:
                     api.submit_order(
                         symbol=unit,
                         qty=int(int(qnty) / dif_symbols),
@@ -94,7 +97,7 @@ def workplace():
                         type='limit',
                         time_in_force='gtc',
                         order_class='simple',
-                        limit_price=df[0]['close'])
+                        limit_price=df['close'].iloc[-1])
                 except Exception as error:
                     print(error)
     else:
