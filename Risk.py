@@ -94,10 +94,3 @@ def risk_sell(stock, api):
         print('risk sell else')
         return 0, 0
         
-
-
-
-
-
-
-
