@@ -36,7 +36,7 @@ def on_close(ws):
 
 def workplace():
     clock = api.get_clock()
-    close = clock.next_close
+    close = clock.next_close - clock.timestamp
     if clock.is_open:
         if close.total_seconds()>900:
             try:
